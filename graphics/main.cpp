@@ -36,7 +36,7 @@ void Display(void)
     glScaled(10, 10, 1);
     glTranslated(25, 25, 0);
     
-    glBegin(GL_POINTS);
+    glBegin(GL_LINES);
     
     for (double xcord = 7; xcord >= 4; xcord -= 0.01)
     {
@@ -45,10 +45,10 @@ void Display(void)
         (5 + 0.97*(abs(xcord - 0.5) + abs(xcord + 0.5)) - 3 * (abs(xcord - 0.75) + abs(xcord + 0.75)))*
         (1 + abs(1 - abs(xcord)) / (1 - abs(xcord)));
         glVertex3d(xcord, ycordPos, 0);
-        glVertex3d(-xcord, ycordPos, 0); // Mirror X
         
         double ycordNeg = -3 * sqrt((double)(1 - pow((xcord / 7), 2)))*sqrt((double)(abs(abs(xcord) - 4) / (abs(xcord) - 4)));
         glVertex3d(xcord, ycordNeg, 0);
+        glVertex3d(-xcord, ycordPos, 0); // Mirror X
         glVertex3d(-xcord, ycordNeg, 0); // Mirror X
     }
     
@@ -68,10 +68,10 @@ void Display(void)
             sqrt((double)(abs(abs(xcord) - 1) / (abs(xcord) - 1))) + 0.9;
         }
         glVertex3d(xcord, ycordPos, 0);
-        glVertex3d(-xcord, ycordPos, 0);
         
         double ycordNeg = abs(xcord / 2) - 0.0913722*pow(xcord, 2) - 3 + sqrt((double)(1 - pow((abs(abs(xcord) - 2) - 1), 2)));
         glVertex3d(xcord, ycordNeg, 0);
+        glVertex3d(-xcord, ycordPos, 0);
         glVertex3d(-xcord, ycordNeg, 0);
     }
     
