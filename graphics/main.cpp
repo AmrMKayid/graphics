@@ -13,6 +13,8 @@
 void Display(void);
 void Anim(void);
 
+double limit = 7;
+
 int main(int argc, char** argr)
 {
     glutInit(&argc, argr);
@@ -38,7 +40,7 @@ void Display(void)
     
     glBegin(GL_LINES);
     
-    for (double xcord = 7; xcord >= 4; xcord -= 0.01)
+    for (double xcord = 7; xcord >= 4 && xcord >= limit; xcord -= 0.01)
     {
         double ycordPos = 2 * sqrt((double)(-1 * (abs(abs(xcord) - 1))*abs(3 - abs(xcord)) / ((abs(xcord) - 1)*(3 - abs(xcord)))))*
         (1 + abs(abs(xcord) - 3) / (abs(xcord) - 3))*sqrt((double)(1 - pow((xcord / 7), 2))) +
@@ -52,7 +54,7 @@ void Display(void)
         glVertex3d(-xcord, ycordNeg, 0); // Mirror X
     }
     
-    for (double xcord = 3.99; xcord >= 0; xcord -= 0.01)
+    for (double xcord = 3.99; xcord >= 0 && xcord >= limit; xcord -= 0.01)
     {
         double ycordPos;
         if (xcord >= 3 || xcord <= 1)
@@ -84,6 +86,6 @@ void Display(void)
 
 void Anim()
 {
-    
+    limit -= 0.01;
     glutPostRedisplay();
 }
