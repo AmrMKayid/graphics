@@ -14,6 +14,7 @@ void Display(void);
 void Anim(void);
 
 double limit = 7;
+double color = 1;
 
 int main(int argc, char** argr)
 {
@@ -32,6 +33,8 @@ int main(int argc, char** argr)
 void Display(void)
 {
     glClear(GL_COLOR_BUFFER_BIT);
+    glClearColor(color, color, color, 0.0f);
+    
     glColor3f(0, 0, 0);
     
     glPushMatrix();
@@ -87,5 +90,6 @@ void Display(void)
 void Anim()
 {
     limit -= 0.01;
+    color -= 0.001;
     glutPostRedisplay();
 }
