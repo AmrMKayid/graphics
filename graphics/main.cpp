@@ -9,20 +9,29 @@
 #endif
 
 #include <stdlib.h>
+#include <math.h>
 
 
 // ------------------ Method declaration ------------------ //
 void changeSize(int w, int h);
 void processNormalKeys(unsigned char key, int x, int y);
 void processSpecialKeys(int key, int x, int y);
+void drawSnowMan();
 void Display(void);
 
 // --------------------------------------------------------------- //
 
-// ------------------ Variables ------------------ //
-float angle = 0.0f;
+// ------------------ Global Variables ------------------ //
+//float angle = 0.0f;
 float red=1.0f, blue=1.0f, green=1.0f;
 
+// ----- Camera ----- //
+// angle of rotation for the camera direction
+float angle=0.0;
+// actual vector representing the camera's direction
+float lx=0.0f, lz=-1.0f;
+// XZ position of the camera
+float x=0.0f, z=5.0f;
 
 // --------------------------------------------------------------- //
 
@@ -66,20 +75,31 @@ void Display(void) {
     // Reset transformations
     glLoadIdentity();
     // Set the camera
-    gluLookAt(    0.0f, 0.0f, 10.0f,
-              0.0f, 0.0f,  0.0f,
-              0.0f, 1.0f,  0.0f);
+    gluLookAt(    x, 1.0f, z,
+             x+lx, 1.0f,  z+lz,
+             0.0f, 1.0f,  0.0f);
     
-    glRotatef(angle, 0.0f, 1.0f, 0.0f);
+//    glRotatef(angle, 0.0f, 1.0f, 0.0f);
     
-    glColor3f(red,green,blue);
-    glBegin(GL_TRIANGLES);
-    glVertex3f(-2.0f,-2.0f, 0.0f);
-    glVertex3f( 2.0f, 0.0f, 0.0);
-    glVertex3f( 0.0f, 2.0f, 0.0);
+    // Draw ground
+    glColor3f(0.9f, 0.9f, 0.9f);
+    glBegin(GL_QUADS);
+        glVertex3f(-100.0f, 0.0f, -100.0f);
+        glVertex3f(-100.0f, 0.0f,  100.0f);
+        glVertex3f( 100.0f, 0.0f,  100.0f);
+        glVertex3f( 100.0f, 0.0f, -100.0f);
     glEnd();
     
-    angle+=0.1f;
+//    angle+=0.1f;
+    
+    // Draw 36 SnowMen
+    for(int i = -3; i < 3; i++)
+        for(int j=-3; j < 3; j++) {
+            glPushMatrix();
+            glTranslatef(i*10.0,0,j * 10.0);
+            drawSnowMan();
+            glPopMatrix();
+        }
     
     glutSwapBuffers();
 }
@@ -100,42 +120,57 @@ void processNormalKeys(unsigned char key, int x, int y) {
 
 void processSpecialKeys(int key, int x, int y) {
     
-    int mod;
-    switch(key) {
-        case GLUT_KEY_F1 :  // CTRL+ALT+F1
-            mod = glutGetModifiers();
-            if (mod == (GLUT_ACTIVE_CTRL|GLUT_ACTIVE_ALT)) {
-                red = 1.0; green = 0.0; blue = 0.0;
-            }
-            break;
-        case GLUT_KEY_F2 :
-            red = 0.0;
-            green = 1.0;
-            blue = 0.0; break;
-        case GLUT_KEY_F3 :
-            red = 0.0;
-            green = 0.0;
-            blue = 1.0; break;
-        case GLUT_KEY_UP :
-            red = 1.0;
-            green = 0.0;
-            blue = 1.0; break;
-        case GLUT_KEY_DOWN :
-            red = 0.0;
-            green = 1.0;
-            blue = 1.0; break;
-        case GLUT_KEY_RIGHT :
-            red = 1.0;
-            green = 1.0;
-            blue = 1.0; break;
+    float fraction = 0.1f;
+    
+    switch (key) {
         case GLUT_KEY_LEFT :
-            red = 1.0;
-            green = 1.0;
-            blue = 0.0; break;
+            angle -= 0.01f;
+            lx = sin(angle);
+            lz = -cos(angle);
+            break;
+        case GLUT_KEY_RIGHT :
+            angle += 0.01f;
+            lx = sin(angle);
+            lz = -cos(angle);
+            break;
+        case GLUT_KEY_UP :
+            x += lx * fraction;
+            z += lz * fraction;
+            break;
+        case GLUT_KEY_DOWN :
+            x -= lx * fraction;
+            z -= lz * fraction;
+            break;
     }
 }
 
 // --------------------------------------------------------------- //
+
+void drawSnowMan() {
+    
+    glColor3f(1.0f, 1.0f, 1.0f);
+    
+    // Draw Body
+    glTranslatef(0.0f ,0.75f, 0.0f);
+    glutSolidSphere(0.75f,20,20);
+    
+    // Draw Head
+    glTranslatef(0.0f, 1.0f, 0.0f);
+    glutSolidSphere(0.25f,20,20);
+    
+    // Draw Eyes
+    glPushMatrix();
+    glColor3f(0.0f,0.0f,0.0f);
+    glTranslatef(0.05f, 0.10f, 0.18f);
+    glutSolidSphere(0.05f,10,10);
+    glTranslatef(-0.1f, 0.0f, 0.0f);
+    glutSolidSphere(0.05f,10,10);
+    glPopMatrix();
+    
+    // Draw Nose
+    glColor3f(1.0f, 0.5f , 0.5f);
+    glutSolidCone(0.08f,0.5f,10,2);
+}
 
 void changeSize(int w, int h) {
     
@@ -161,5 +196,7 @@ void changeSize(int w, int h) {
     // Get Back to the Modelview
     glMatrixMode(GL_MODELVIEW);
 }
+
+
 
 
