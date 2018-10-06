@@ -8,35 +8,48 @@
 #include <GL/gl.h>
 #endif
 
+#include <stdlib.h>
+
+
 // ------------------ Method declaration ------------------ //
 void changeSize(int w, int h);
+void processNormalKeys(unsigned char key, int x, int y);
+void processSpecialKeys(int key, int x, int y);
 void Display(void);
 
-// ------------------------------------------------ //
+// --------------------------------------------------------------- //
 
 // ------------------ Variables ------------------ //
 float angle = 0.0f;
+float red=1.0f, blue=1.0f, green=1.0f;
 
 
-// ------------------------------------------------ //
+// --------------------------------------------------------------- //
 
 
 int main(int argc, char** argr) {
     
-    // init GLUT and create window
+    // ----- init GLUT and create window ----- //
     glutInit(&argc, argr);
     glutInitWindowPosition(50, 50);
     glutInitWindowSize(500, 500);
     glutInitDisplayMode(GLUT_DEPTH | GLUT_DOUBLE | GLUT_RGBA);
     glutCreateWindow("Space Invaders");
     
-    // register callbacks
+    
+    // ----- register callbacks ----- //
     glutDisplayFunc(Display);
     glutReshapeFunc(changeSize);
-    glutIdleFunc(Display);  // For animation
+    
+    // for animation
+    glutIdleFunc(Display);
+    
+    // for keys
+    glutKeyboardFunc(processNormalKeys);
+    glutSpecialFunc(processSpecialKeys);
 
     
-    // enter GLUT event processing cycle
+    // ----- enter GLUT event processing cycle ----- //
     glutMainLoop();
     
 //    glClearColor(1.0f, 1.0f, 1.0f, 0.0f);
@@ -59,6 +72,7 @@ void Display(void) {
     
     glRotatef(angle, 0.0f, 1.0f, 0.0f);
     
+    glColor3f(red,green,blue);
     glBegin(GL_TRIANGLES);
     glVertex3f(-2.0f,-2.0f, 0.0f);
     glVertex3f( 2.0f, 0.0f, 0.0);
@@ -69,6 +83,59 @@ void Display(void) {
     
     glutSwapBuffers();
 }
+
+// ------------------ Method declaration ------------------ //
+void processNormalKeys(unsigned char key, int x, int y) {
+    
+    if (key == 27)
+        exit(0);
+    else if (key=='r') {
+        int mod = glutGetModifiers();
+        if (mod == GLUT_ACTIVE_ALT)
+            red = 0.0;
+        else
+            red = 1.0;
+    }
+}
+
+void processSpecialKeys(int key, int x, int y) {
+    
+    int mod;
+    switch(key) {
+        case GLUT_KEY_F1 :  // CTRL+ALT+F1
+            mod = glutGetModifiers();
+            if (mod == (GLUT_ACTIVE_CTRL|GLUT_ACTIVE_ALT)) {
+                red = 1.0; green = 0.0; blue = 0.0;
+            }
+            break;
+        case GLUT_KEY_F2 :
+            red = 0.0;
+            green = 1.0;
+            blue = 0.0; break;
+        case GLUT_KEY_F3 :
+            red = 0.0;
+            green = 0.0;
+            blue = 1.0; break;
+        case GLUT_KEY_UP :
+            red = 1.0;
+            green = 0.0;
+            blue = 1.0; break;
+        case GLUT_KEY_DOWN :
+            red = 0.0;
+            green = 1.0;
+            blue = 1.0; break;
+        case GLUT_KEY_RIGHT :
+            red = 1.0;
+            green = 1.0;
+            blue = 1.0; break;
+        case GLUT_KEY_LEFT :
+            red = 1.0;
+            green = 1.0;
+            blue = 0.0; break;
+    }
+}
+
+// --------------------------------------------------------------- //
 
 void changeSize(int w, int h) {
     
