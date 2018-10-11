@@ -11,6 +11,14 @@
 		2656598D214FCC4100136BB4 /* GLUT.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 2656598C214FCC4100136BB4 /* GLUT.framework */; };
 		2656598F214FCC5700136BB4 /* Cocoa.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 2656598E214FCC5700136BB4 /* Cocoa.framework */; };
 		26565991214FCC6300136BB4 /* OpenGL.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 26565990214FCC6300136BB4 /* OpenGL.framework */; };
+		26BB590D216FEAB2002CD6C8 /* Vector2d.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 26BB590B216FEAB2002CD6C8 /* Vector2d.cpp */; };
+		26BB5910216FEAD9002CD6C8 /* Utilities.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 26BB590E216FEAD9002CD6C8 /* Utilities.cpp */; };
+		26BB5913216FECA1002CD6C8 /* bullet.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 26BB5911216FECA1002CD6C8 /* bullet.cpp */; };
+		26BB5916216FED2A002CD6C8 /* friendlybullet.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 26BB5914216FED2A002CD6C8 /* friendlybullet.cpp */; };
+		26BB5919216FED77002CD6C8 /* enemybullet.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 26BB5917216FED77002CD6C8 /* enemybullet.cpp */; };
+		26BB591C216FEDBC002CD6C8 /* spaceship.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 26BB591A216FEDBC002CD6C8 /* spaceship.cpp */; };
+		26BB591F216FEE17002CD6C8 /* alien.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 26BB591D216FEE17002CD6C8 /* alien.cpp */; };
+		26BB5922216FEE87002CD6C8 /* gameworld.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 26BB5920216FEE87002CD6C8 /* gameworld.cpp */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXCopyFilesBuildPhase section */
@@ -31,6 +39,22 @@
 		2656598C214FCC4100136BB4 /* GLUT.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = GLUT.framework; path = System/Library/Frameworks/GLUT.framework; sourceTree = SDKROOT; };
 		2656598E214FCC5700136BB4 /* Cocoa.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Cocoa.framework; path = System/Library/Frameworks/Cocoa.framework; sourceTree = SDKROOT; };
 		26565990214FCC6300136BB4 /* OpenGL.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = OpenGL.framework; path = System/Library/Frameworks/OpenGL.framework; sourceTree = SDKROOT; };
+		26BB590B216FEAB2002CD6C8 /* Vector2d.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = Vector2d.cpp; sourceTree = "<group>"; };
+		26BB590C216FEAB2002CD6C8 /* Vector2d.hpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.h; path = Vector2d.hpp; sourceTree = "<group>"; };
+		26BB590E216FEAD9002CD6C8 /* Utilities.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = Utilities.cpp; sourceTree = "<group>"; };
+		26BB590F216FEAD9002CD6C8 /* Utilities.hpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.h; path = Utilities.hpp; sourceTree = "<group>"; };
+		26BB5911216FECA1002CD6C8 /* bullet.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = bullet.cpp; sourceTree = "<group>"; };
+		26BB5912216FECA1002CD6C8 /* bullet.hpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.h; path = bullet.hpp; sourceTree = "<group>"; };
+		26BB5914216FED2A002CD6C8 /* friendlybullet.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = friendlybullet.cpp; sourceTree = "<group>"; };
+		26BB5915216FED2A002CD6C8 /* friendlybullet.hpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.h; path = friendlybullet.hpp; sourceTree = "<group>"; };
+		26BB5917216FED77002CD6C8 /* enemybullet.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = enemybullet.cpp; sourceTree = "<group>"; };
+		26BB5918216FED77002CD6C8 /* enemybullet.hpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.h; path = enemybullet.hpp; sourceTree = "<group>"; };
+		26BB591A216FEDBC002CD6C8 /* spaceship.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = spaceship.cpp; sourceTree = "<group>"; };
+		26BB591B216FEDBC002CD6C8 /* spaceship.hpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.h; path = spaceship.hpp; sourceTree = "<group>"; };
+		26BB591D216FEE17002CD6C8 /* alien.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = alien.cpp; sourceTree = "<group>"; };
+		26BB591E216FEE17002CD6C8 /* alien.hpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.h; path = alien.hpp; sourceTree = "<group>"; };
+		26BB5920216FEE87002CD6C8 /* gameworld.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = gameworld.cpp; sourceTree = "<group>"; };
+		26BB5921216FEE87002CD6C8 /* gameworld.hpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.h; path = gameworld.hpp; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -68,6 +92,22 @@
 			isa = PBXGroup;
 			children = (
 				26565984214FCC1C00136BB4 /* main.cpp */,
+				26BB590B216FEAB2002CD6C8 /* Vector2d.cpp */,
+				26BB590C216FEAB2002CD6C8 /* Vector2d.hpp */,
+				26BB590E216FEAD9002CD6C8 /* Utilities.cpp */,
+				26BB590F216FEAD9002CD6C8 /* Utilities.hpp */,
+				26BB5911216FECA1002CD6C8 /* bullet.cpp */,
+				26BB5912216FECA1002CD6C8 /* bullet.hpp */,
+				26BB5914216FED2A002CD6C8 /* friendlybullet.cpp */,
+				26BB5915216FED2A002CD6C8 /* friendlybullet.hpp */,
+				26BB5917216FED77002CD6C8 /* enemybullet.cpp */,
+				26BB5918216FED77002CD6C8 /* enemybullet.hpp */,
+				26BB591A216FEDBC002CD6C8 /* spaceship.cpp */,
+				26BB591B216FEDBC002CD6C8 /* spaceship.hpp */,
+				26BB591D216FEE17002CD6C8 /* alien.cpp */,
+				26BB591E216FEE17002CD6C8 /* alien.hpp */,
+				26BB5920216FEE87002CD6C8 /* gameworld.cpp */,
+				26BB5921216FEE87002CD6C8 /* gameworld.hpp */,
 			);
 			path = graphics;
 			sourceTree = "<group>";
@@ -138,7 +178,15 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				26BB591C216FEDBC002CD6C8 /* spaceship.cpp in Sources */,
+				26BB5919216FED77002CD6C8 /* enemybullet.cpp in Sources */,
+				26BB5916216FED2A002CD6C8 /* friendlybullet.cpp in Sources */,
+				26BB591F216FEE17002CD6C8 /* alien.cpp in Sources */,
+				26BB5922216FEE87002CD6C8 /* gameworld.cpp in Sources */,
 				26565985214FCC1C00136BB4 /* main.cpp in Sources */,
+				26BB590D216FEAB2002CD6C8 /* Vector2d.cpp in Sources */,
+				26BB5910216FEAD9002CD6C8 /* Utilities.cpp in Sources */,
+				26BB5913216FECA1002CD6C8 /* bullet.cpp in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -259,6 +307,7 @@
 			buildSettings = {
 				CODE_SIGN_STYLE = Automatic;
 				DEVELOPMENT_TEAM = RPB2AU8X3M;
+				OTHER_CFLAGS = "-Wno-deprecated";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 			};
 			name = Debug;
@@ -268,6 +317,7 @@
 			buildSettings = {
 				CODE_SIGN_STYLE = Automatic;
 				DEVELOPMENT_TEAM = RPB2AU8X3M;
+				OTHER_CFLAGS = "-Wno-deprecated";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 			};
 			name = Release;
