@@ -11,7 +11,7 @@
 #endif
 
 // -----------------------------------
-//          Global Variables
+//          Constant
 // -----------------------------------
 #define WINDOW_WIDTH 1200
 #define WINDOW_HEIGHT 800
@@ -22,7 +22,7 @@
 // -----------------------------------
 void drawRect(int x, int y, int w, int h);
 void drawCircle(int x, int y, float r);
-void Key(unsigned char key, int x, int y);
+void keyboardListener(unsigned char key, int x, int y);
 void KeyUp(unsigned char key, int x, int y);
 void Mouse(int button, int state, int x, int y);
 void Timer(int value);
@@ -48,7 +48,7 @@ public:
     }
 
     void translateX(double deltaX){
-        x += deltaX;
+            x += deltaX;
     }
     
     void translateY(double deltaY){
@@ -70,7 +70,7 @@ public:
 };
 
 
-class SpaceShip : public Object{
+class SpaceShip : public Object {
 public:
     SpaceShip(double xx, double xy, double xwidth, double xheight):Object(xx,xy,xwidth,xheight) {}
     void draw(){
@@ -127,10 +127,25 @@ public:
 };
 
 
+class Enemy : public Object {
+public:
+    Enemy(double xx, double xy, double xwidth, double xheight):Object(xx,xy,xwidth,xheight) {}
+    
+    void draw() {
+        
+    }
+    bool update();
+    void shoot(double x);
+
+};
 
 
 
 
+// -----------------------------------
+//          Global Variables
+// -----------------------------------
+SpaceShip *ship = new SpaceShip(WINDOW_WIDTH / 2 + 25, 50, 50, 50);
 
 // -----------------------------------
 //              Methods
@@ -154,11 +169,24 @@ void drawCircle(int x, int y, float r) {
     glPopMatrix();
 }
 
+void keyboardListener(unsigned char key, int x, int y) {
+    switch (key) {
+        case 'a':
+            ship->translateX(-10);
+            break;
+        case 'd':
+            ship->translateX(10);
+            break;
+        default:
+            break;
+    }
+    // ask OpenGL to recall the display function to reflect the changes on the window
+    glutPostRedisplay();
+}
+
 void display() {
     glClear(GL_COLOR_BUFFER_BIT);
     
-    glColor3f(1, 1, 0);
-    SpaceShip *ship = new SpaceShip(WINDOW_WIDTH / 2 + 25, 50, 50, 50);
     ship->draw();
     
     
@@ -178,7 +206,8 @@ int main(int argc, char** argv) {
     
     /* Callbacks */
     glutDisplayFunc(display);
-//    glutKeyboardFunc(keyboardListener);
+    glutKeyboardFunc(keyboardListener);
+//    glutKeyboardUpFunc(KeyUp);
 //    glutMouseFunc(mouseListener);
 //    glutTimerFunc(GameWorld::REFRESH_RATE, update, 0);
     
