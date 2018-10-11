@@ -1,10 +1,5 @@
 /* Libraries */
 
-#include <cstdlib>
-#include <iostream>
-#include <cstdio>
-#include <cmath>
-#include <time.h>
 #ifdef __APPLE__
 #include <GLUT/glut.h>
 #include <OpenGL/gl.h>
@@ -15,65 +10,182 @@
 #include <GL/gl.h>
 #endif
 
-/* Personal include files */
-#include "gameworld.hpp"
+// -----------------------------------
+//          Global Variables
+// -----------------------------------
+#define WINDOW_WIDTH 1200
+#define WINDOW_HEIGHT 800
 
-using namespace std;
 
-/* Callback prototypes */
-void reshape(int w, int h);
-void display();
-void keyboardListener(unsigned char c, int x, int y);
-void mouseListener(int b, int s, int x, int y);
-void update(int value);
+// -----------------------------------
+//          Methods Signatures
+// -----------------------------------
+void drawRect(int x, int y, int w, int h);
+void drawCircle(int x, int y, float r);
+void Key(unsigned char key, int x, int y);
+void KeyUp(unsigned char key, int x, int y);
+void Mouse(int button, int state, int x, int y);
+void Timer(int value);
+void Display();
 
-/* Game world. Use to control things */
-GameWorld world;
 
+// -----------------------------------
+//              Classes
+// -----------------------------------
+class Object{
+    
+public:
+    double x;
+    double y;
+    double width;
+    double height;
+    
+    Object(double xx, double xy, double xwidth, double xheight) {
+        x = xx;
+        y = xy;
+        width = xwidth;
+        height = xheight;
+    }
+
+    void translateX(double deltaX){
+        x += deltaX;
+    }
+    
+    void translateY(double deltaY){
+        y += deltaY;
+    }
+    
+    void draw(){
+        drawRect(x, y, width, height);
+    }
+    
+    double centerX(){
+        return this->x + (this->width)/2;
+    }
+    
+    double centerY(){
+        return this->y + (this->height)/2;
+    }
+
+};
+
+
+class SpaceShip : public Object{
+public:
+    SpaceShip(double xx, double xy, double xwidth, double xheight):Object(xx,xy,xwidth,xheight) {}
+    void draw(){
+        glPointSize(10.0);
+        
+        glBegin(GL_POINTS);//front shooter
+        glColor3f(1,1,1);//111
+        glVertex2f(x, y +40);
+        glEnd();
+        
+        glBegin(GL_QUADS);
+        glColor3f(0.137255,0.419608,0.556863);//middle body
+        glVertex2f(x - 25, y + 25);
+        glVertex2f(x - 25, y - 25);
+        glVertex2f(x + 25, y - 25);
+        glVertex2f(x + 25, y + 25);
+        glEnd();
+        
+        glBegin(GL_POINTS);//design on middle
+        glColor3f(0.90,0.91,0.98);
+        glVertex2f(x-10,y-5);
+        glVertex2f(x+10,y-5);
+        glEnd();
+        
+        glBegin(GL_POINTS);//thrusters
+        glColor3f(1,1,1);
+        glVertex2f(x-10,y-30);
+        glVertex2f(x+10,y-30);
+        glEnd();
+        
+        glBegin(GL_TRIANGLES);//right wing
+        glColor3f(0.196078,0.8,0.196078);
+        glVertex2f(x+25,y+25);
+        glVertex2f(x+25,y-25);
+        glVertex2f(x+45,y-35);
+        glEnd();
+        
+        glBegin(GL_TRIANGLES);//left wing
+        glColor3f(0.196078,0.8,0.196078);
+        glVertex2f(x-25,y+25);
+        glVertex2f(x-25,y-25);
+        glVertex2f(x-45,y-35);
+        glEnd();
+        
+        
+        glBegin(GL_QUADS);//up body
+        glColor3f(0.99609, 0.83984, 0);
+        glVertex2f(x - 25, y + 25);
+        glVertex2f(x - 18, y + 40);
+        glVertex2f(x + 18, y + 40);
+        glVertex2f(x + 25, y + 25);
+        glEnd();
+    }
+};
+
+
+
+
+
+
+
+// -----------------------------------
+//              Methods
+// -----------------------------------
+// draws rectangles using the (x,y) of the bottom left vertex, width (w) and height (h)
+void drawRect(int x, int y, int w, int h) {
+    glBegin(GL_POLYGON);
+    glVertex2f(x, y);
+    glVertex2f(x + w, y);
+    glVertex2f(x + w, y + h);
+    glVertex2f(x, y + h);
+    glEnd();
+}
+
+// draws a circle using OpenGL's gluDisk, given (x,y) of its center and tis radius
+void drawCircle(int x, int y, float r) {
+    glPushMatrix();
+    glTranslatef(x, y, 0);
+    GLUquadric *quadObj = gluNewQuadric();
+    gluDisk(quadObj, 0, r, 50, 50);
+    glPopMatrix();
+}
+
+void display() {
+    glClear(GL_COLOR_BUFFER_BIT);
+    
+    glColor3f(1, 1, 0);
+    SpaceShip *ship = new SpaceShip(WINDOW_WIDTH / 2 + 25, 50, 50, 50);
+    ship->draw();
+    
+    
+    glFlush();
+}
+
+// -----------------------------------
+//               Main
+// -----------------------------------
 int main(int argc, char** argv) {
     /* Initializers */
-    srand(time(NULL));
     glutInit(&argc, argv);
-    glutInitWindowSize(GameWorld::SUGGESTED_WIDTH, GameWorld::SUGGESTED_HEIGHT);
-    glutInitWindowPosition(GameWorld::STARTING_WINDOW_X, GameWorld::STARTING_WINDOW_Y);
-    glutCreateWindow("Assignment 1 - Space Invaders");
+    glutInitWindowSize(WINDOW_WIDTH, WINDOW_HEIGHT);
+    glutInitDisplayMode(GLUT_SINGLE | GLUT_RGB);
+    glutInitWindowPosition(50, 50);
+    glutCreateWindow("Kayid - Space Invaders");
     
     /* Callbacks */
     glutDisplayFunc(display);
-    glutReshapeFunc(reshape);
-    glutKeyboardFunc(keyboardListener);
-    glutMouseFunc(mouseListener);
-    glutTimerFunc(GameWorld::REFRESH_RATE, update, 0);
-    world.resetTime();
+//    glutKeyboardFunc(keyboardListener);
+//    glutMouseFunc(mouseListener);
+//    glutTimerFunc(GameWorld::REFRESH_RATE, update, 0);
+    
+    glClearColor(1, 1, 1, 0);
+    gluOrtho2D(0, WINDOW_WIDTH, 0, WINDOW_HEIGHT);
+
     /* Main loop */
     glutMainLoop();
     return 0;
-}
-
-void reshape(int w, int h) {
-    glViewport (0, 0, w, h);                    // update the viewport
-    glMatrixMode(GL_PROJECTION);                // update projection
-    glLoadIdentity();
-    gluOrtho2D(0.0, GameWorld::WINDOW_WIDTH, 0.0, GameWorld::WINDOW_HEIGHT);             // map unit square to viewport
-    glMatrixMode(GL_MODELVIEW);
-    glutPostRedisplay();                        // request redisplay
-}
-
-void display() {                          // display callback
-    world.drawGame();
-    glutSwapBuffers();                          // swap buffers
-}
-
-void mouseListener(int b, int s, int x, int y) {      // mouse click callback
-    world.processMouse(b, s, x, y);
-}
-// keyboard callback
-void keyboardListener(unsigned char c, int x, int y) {
-    world.processKeyPress(c, x, y);
-}
-
-void update(int value) {
-    world.updateState();
-    glutPostRedisplay();
-    glutTimerFunc(GameWorld::REFRESH_RATE, update, 0);
 }
