@@ -350,6 +350,8 @@ BulletObserver *ship_bullets = new BulletObserver();
 Enemy *enemy = new Enemy(WINDOW_WIDTH / 2, WINDOW_HEIGHT - 100, 50, 50);
 BulletObserver *enemy_bullets = new BulletObserver();
 
+Enemy *enemy_defender = new Enemy(WINDOW_WIDTH, WINDOW_HEIGHT / 2, WINDOW_WIDTH / 10, 30);
+
 Collider *collider = new Collider(ship_bullets, enemy);
 ColliderShip *colliderShip = new ColliderShip(enemy_bullets, ship);
 
@@ -479,6 +481,8 @@ void display() {
     enemy->draw();
     enemy_bullets->draw();
     
+    enemy_defender->draw();
+    
     
     string scoreStr="Score: "+ convertInt(ship->score);
     rendertext(10, WINDOW_HEIGHT-20, scoreStr);
@@ -501,6 +505,11 @@ void myTimer( int valor) {
     
     enemy_movement();
     
+    enemy_defender->translateX(-4*(STEP + STEP));
+    if(enemy_defender->x < 0) {
+        enemy_defender->x = WINDOW_WIDTH;
+    }
+    
     ship_bullets->update(BULLET_SPEED);
     
     enemy->bullet_timer += 10;
@@ -510,7 +519,6 @@ void myTimer( int valor) {
     }
     enemy_bullets->update(-BULLET_SPEED);
 
-    
     glutTimerFunc(0, myTimer, 0);
     glutPostRedisplay();
 }
@@ -618,7 +626,6 @@ void restart() {
     enemy = new Enemy(WINDOW_WIDTH / 2, WINDOW_HEIGHT - 100, 50, 50);
 }
 
-// draws rectangles using the (x,y) of the bottom left vertex, width (w) and height (h)
 void drawRect(int x, int y, int w, int h) {
     glBegin(GL_POLYGON);
     glVertex2f(x, y);
@@ -628,7 +635,6 @@ void drawRect(int x, int y, int w, int h) {
     glEnd();
 }
 
-// draws a circle using OpenGL's gluDisk, given (x,y) of its center and tis radius
 void drawCircle(int x, int y, float r) {
     glPushMatrix();
     glTranslatef(x, y, 0);
@@ -644,7 +650,6 @@ string convertInt(int number) {
     return ss.str();
 }
 
-// render text  and show it
 void rendertext(float x,float y, string strings) {
     
     glColor3f(.26,.32,.77);
