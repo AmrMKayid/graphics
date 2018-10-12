@@ -11,6 +11,7 @@
 #endif
 #include <stdlib.h>
 #include <stdio.h>
+#include <math.h>
 #include <string>
 #include <iostream>
 #include <sstream>
@@ -41,6 +42,10 @@ void Anim();
 void keyboardListener(unsigned char key, int x, int y);
 void keyboardSpecialListener(int key, int x, int y);
 
+void enemy_movement();
+int* bezier(float t, int* p0,int* p1,int* p2,int* p3);
+void init_bezier();
+void restart();
 string convertInt(int number);
 void rendertext(float x,float y, string strings);
 void drawRect(int x, int y, int w, int h);
@@ -78,6 +83,12 @@ public:
     void draw(){
         glColor3f(1.0, 0.0, 0.0);
         drawRect(x, y, width, height);
+    }
+    
+    bool collided(double fX, double fY){
+        if ( (fX >= this->x && fX <= this->x + this->width) && (fY >= this->y && fY <= this->y + this->height) )
+            return true;
+        return false;
     }
     
     double centerX(){
@@ -227,6 +238,7 @@ public:
         glVertex2f(x + 25, y + 25);
         glEnd();
     }
+
     
     Bullet* shoot(){
         return new Bullet(this->centerX() - 17, this->centerY() + 35, 5, 25);
@@ -244,12 +256,6 @@ public:
     void draw() {
         glColor3f(1.0, 0.0, 0.0);
         drawRect(x, y, width, height);
-    }
-    
-    bool collided(double fX, double fY){
-        if ( (fX >= this->x && fX <= this->x + this->width) && (fY >= this->y && fY <= this->y + this->height) )
-            return true;
-        return false;
     }
 
     Bullet* shoot(){
@@ -303,6 +309,28 @@ public:
         this->ship = ship;
     }
     
+    int checkForCollisions(){
+        int score = 0;
+        BulletNode* previous = NULL;
+        BulletNode* current = bulletObserver->bulletList;
+        
+        while(current != NULL){
+            if(ship->collided(current->bullet->x, current->bullet->y)){
+                score += SCORE_PLUS;
+                if( previous == NULL)
+                    bulletObserver->bulletList = current->next;
+                else{
+                    current = current -> next;
+                    previous->next = current;
+                }
+            }
+            previous = current;
+            if(current != NULL)
+                current = current -> next;
+        }
+        
+        return score;
+    }
 };
 
 
@@ -311,9 +339,10 @@ public:
 //          Global Variables
 // -----------------------------------
 
-GLuint bg[1];
-int gamestate = 0, level = 0, lives = 3, speed = 50, bulletYield = 0, bulletYieldIndex = 0;
-bool paused = true, init = true, levelUpeado = true;
+int gamestate = 0;
+int p0[2], p1[2], p2[2], p3[2];
+double t = 0, beizer_timer = 0;
+bool movement_reverse = false;
 
 SpaceShip *ship = new SpaceShip(WINDOW_WIDTH / 2, 50, 30, 30);
 BulletObserver *ship_bullets = new BulletObserver();
@@ -337,12 +366,14 @@ int main(int argc, char** argv) {
     glutInitWindowPosition(50, 50);
     glutCreateWindow("Kayid - Space Invaders");
     
+    init_bezier();
+    
     /* Callbacks */
     glutDisplayFunc(gameStates);
     glutIdleFunc(Anim);
     glutKeyboardFunc(keyboardListener);
     glutSpecialFunc(keyboardSpecialListener);
-    glutTimerFunc(speed, myTimer, 1);
+    glutTimerFunc(0, myTimer, 0);
     
     glClearColor(1, 1, 1, 0);
     gluOrtho2D(0, WINDOW_WIDTH, 0, WINDOW_HEIGHT);
@@ -467,6 +498,9 @@ void display() {
 // -----------------------------------
 
 void myTimer( int valor) {
+    
+    enemy_movement();
+    
     ship_bullets->update(BULLET_SPEED);
     
     enemy->bullet_timer += 10;
@@ -477,7 +511,7 @@ void myTimer( int valor) {
     enemy_bullets->update(-BULLET_SPEED);
 
     
-    glutTimerFunc(speed,myTimer,1);
+    glutTimerFunc(0, myTimer, 0);
     glutPostRedisplay();
 }
 
@@ -486,6 +520,10 @@ void Anim() {
     int collision_amount = collider->checkForCollisions();
     ship->score += collision_amount;
     enemy->health -= collision_amount / 2;
+    
+    if(colliderShip->checkForCollisions() > 0) {
+        gamestate = 2;
+    }
 }
 
 
@@ -535,6 +573,50 @@ void keyboardSpecialListener(int key, int x, int y) {
 // -----------------------------------
 //          Helper Methods
 // -----------------------------------
+
+void enemy_movement() {
+    beizer_timer += 30;
+    if(beizer_timer > 100) {
+        beizer_timer = 0;
+        t += (movement_reverse)? (-0.01) : (0.01);
+    }
+    if(t > 0.9) {
+        movement_reverse = true;
+    } else if(t < 0.1) {
+        movement_reverse = false;
+    }
+    int *res = bezier(t, p0, p1, p2, p3);
+    
+    int enemy_newX = res[0], enemy_newY = res[1];
+    enemy->x = enemy_newX;
+    enemy->y = enemy_newY;
+}
+
+int* bezier(float t, int* p0,int* p1,int* p2,int* p3) {
+    int res[2];
+    res[0]=pow((1-t),3)*p0[0]+3*t*pow((1-t),2)*p1[0]+3*pow(t,2)*(1-t)*p2[0]+pow(t,3)*p3[0];
+    res[1]=pow((1-t),3)*p0[1]+3*t*pow((1-t),2)*p1[1]+3*pow(t,2)*(1-t)*p2[1]+pow(t,3)*p3[1];
+    return res;
+}
+
+void init_bezier() {
+    p0[0]=WINDOW_WIDTH / 4;
+    p0[1]=WINDOW_WIDTH / 4 + 100;
+    
+    p1[0]=WINDOW_WIDTH / 4;
+    p1[1]=WINDOW_WIDTH / 4 + 400;
+    
+    p2[0]=WINDOW_WIDTH / 4 + 800;
+    p2[1]=WINDOW_WIDTH / 4 + 400;
+    
+    p3[0]=WINDOW_WIDTH / 4 + 800;
+    p3[1]=WINDOW_WIDTH / 4 + 100;
+}
+
+void restart() {
+    ship = new SpaceShip(WINDOW_WIDTH / 2, 50, 30, 30);
+    enemy = new Enemy(WINDOW_WIDTH / 2, WINDOW_HEIGHT - 100, 50, 50);
+}
 
 // draws rectangles using the (x,y) of the bottom left vertex, width (w) and height (h)
 void drawRect(int x, int y, int w, int h) {
