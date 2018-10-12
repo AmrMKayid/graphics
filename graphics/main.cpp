@@ -48,7 +48,7 @@ public:
     }
 
     void translateX(double deltaX){
-            x += deltaX;
+        x += (deltaX > 0 & x < WINDOW_WIDTH)? deltaX: (deltaX < 0 & x > 0)? deltaX: 0;
     }
     
     void translateY(double deltaY){
@@ -132,7 +132,8 @@ public:
     Enemy(double xx, double xy, double xwidth, double xheight):Object(xx,xy,xwidth,xheight) {}
     
     void draw() {
-        
+        glColor3f(1.0, 0.0, 0.0);
+        drawCircle(x, y, (width + height) / 2);
     }
     bool update();
     void shoot(double x);
@@ -145,7 +146,8 @@ public:
 // -----------------------------------
 //          Global Variables
 // -----------------------------------
-SpaceShip *ship = new SpaceShip(WINDOW_WIDTH / 2 + 25, 50, 50, 50);
+SpaceShip *ship = new SpaceShip(WINDOW_WIDTH / 2, 50, 50, 50);
+Enemy *enemy = new Enemy(WINDOW_WIDTH / 2, WINDOW_HEIGHT - 50, 10, 10);
 
 // -----------------------------------
 //              Methods
@@ -188,7 +190,7 @@ void display() {
     glClear(GL_COLOR_BUFFER_BIT);
     
     ship->draw();
-    
+    enemy->draw();
     
     glFlush();
 }
