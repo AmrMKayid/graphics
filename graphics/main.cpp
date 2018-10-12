@@ -22,7 +22,9 @@ using namespace std;
 // -----------------------------------
 #define WINDOW_WIDTH 1400
 #define WINDOW_HEIGHT 800
-#define STEP 70
+#define STEP 10
+#define BULLET_SPEED 10
+#define SCORE_PLUS 10
 
 // -----------------------------------
 //          Methods Signatures
@@ -34,6 +36,7 @@ void display();
 void gameOver();
 
 void myTimer( int valor);
+void Anim();
 
 void keyboardListener(unsigned char key, int x, int y);
 void keyboardSpecialListener(int key, int x, int y);
@@ -169,6 +172,8 @@ public:
 
 class SpaceShip : public Object {
 public:
+    int score = 0;
+    
     SpaceShip(double xx, double xy, double xwidth, double xheight):Object(xx,xy,xwidth,xheight) {}
     
     void draw(){
@@ -224,85 +229,31 @@ public:
     }
     
     Bullet* shoot(){
-        return new Bullet(this->centerX() - 8, this->centerY() + 35, 5, 25);
+        return new Bullet(this->centerX() - 17, this->centerY() + 35, 5, 25);
     }
 };
 
 
 class Enemy : public Object {
 public:
-    Enemy(double xx, double xy, double xwidth, double xheight):Object(xx,xy,xwidth,xheight) {}
-    int padding;
-    double direction;
+    int health = 100;
+    int bullet_timer = 0;
     
+    Enemy(double xx, double xy, double xwidth, double xheight):Object(xx,xy,xwidth,xheight) {}
+
     void draw() {
         glColor3f(1.0, 0.0, 0.0);
-        drawCircle(x, y, (width + height) / 2);
+        drawRect(x, y, width, height);
     }
-    
     
     bool collided(double fX, double fY){
-        if ((this->x + this->full_width >= fX) && (this->x <= fX)
-            && ((this->y - this->full_height <= fY) && (this->y >= fY))) {
-            int _x = (fX - this->x)/(this->width+this->padding);
-            if(fX >= (_x * (this->width+this->padding)+ this->x)-5 &&
-               fX < (_x * (this->width+this->padding)+ this->x + this->width)){
-                //          int _y = (fY - (this->y - this->full_height))/(this->height+this->padding);
-                cout<<"Collided\n";
-                return true;
-            }
-        }
-        return false;
-    }
-    
-    bool update(){
-        
-        if(
-           this->x <= (85 - this->full_width) &&
-           this->x >= -85
-           ){
-            this->translateX(this->direction);
-        }else{
-            this->direction = -1 * this->direction;
-            this->translateX(this->direction);
-            this->translateY(-1);
-        }
-        
-        if(this->y - this->full_height < -90)
+        if ( (fX >= this->x && fX <= this->x + this->width) && (fY >= this->y && fY <= this->y + this->height) )
             return true;
         return false;
     }
-    
-    Bullet* generateBullet(int i, int j){
-        int x = this->x + (j* (this->width+this->padding));
-        int y = this->y - (i* (this->height+this->padding));
-        y -= this->height + 3;
-        x += this->width/2;
-        return new Bullet(x,y,1,3);
-    }
-    
-    Bullet* shoot(double x){
-        srand((unsigned)time(0));
-        
-        int _x = (x - this->x)/(this->width+this->padding);
-        int dx = rand()%2;
-        int ix = _x - dx;
-        int sx = _x + dx;
-        if(ix < 0) ix = 0;
-        if(ix > 7) ix = 7;
-        if(sx < 0) sx = 0;
-        if(sx > 7) sx = 7;
-        
-        for(int j = ix; j<=sx;j++){
-            if(rand()%10 > 1){
-                int o = 3;
-                while(o >= 0){
-                    return generateBullet(o,j);
-                    //                    o--;
-                }
-            }
-        }
-        return NULL;
+
+    Bullet* shoot(){
+        return new Bullet(this->centerX() - 7, this->centerY() - 30, 5, 25);
     }
     
 };
@@ -325,7 +276,7 @@ public:
         
         while(current != NULL){
             if(enemy->collided(current->bullet->x, current->bullet->y)){
-                score += 10;
+                score += SCORE_PLUS;
                 if( previous == NULL)
                     bulletObserver->bulletList = current->next;
                 else{
@@ -361,14 +312,17 @@ public:
 // -----------------------------------
 
 GLuint bg[1];
-int gamestate = 0, score = 0, health = 100, level = 0, lives = 3, speed = 50, bulletYield = 0, bulletYieldIndex = 0;
+int gamestate = 0, level = 0, lives = 3, speed = 50, bulletYield = 0, bulletYieldIndex = 0;
 bool paused = true, init = true, levelUpeado = true;
-SpaceShip *ship = new SpaceShip(WINDOW_WIDTH / 2, 50, 10, 10);
+
+SpaceShip *ship = new SpaceShip(WINDOW_WIDTH / 2, 50, 30, 30);
 BulletObserver *ship_bullets = new BulletObserver();
-Enemy *enemy = new Enemy(WINDOW_WIDTH / 2, WINDOW_HEIGHT - 50, 10, 10);
+
+Enemy *enemy = new Enemy(WINDOW_WIDTH / 2, WINDOW_HEIGHT - 100, 50, 50);
+BulletObserver *enemy_bullets = new BulletObserver();
+
 Collider *collider = new Collider(ship_bullets, enemy);
-BulletObserver *enemiesBulletObserver = new BulletObserver();
-ColliderShip *colliderShip = new ColliderShip(enemiesBulletObserver, ship);
+ColliderShip *colliderShip = new ColliderShip(enemy_bullets, ship);
 
 
 // -----------------------------------
@@ -385,6 +339,7 @@ int main(int argc, char** argv) {
     
     /* Callbacks */
     glutDisplayFunc(gameStates);
+    glutIdleFunc(Anim);
     glutKeyboardFunc(keyboardListener);
     glutSpecialFunc(keyboardSpecialListener);
     glutTimerFunc(speed, myTimer, 1);
@@ -423,7 +378,7 @@ void gameMenu() {
     string txtGameName="Kayid Space Invader";
     string txtStart="Press (P)lay to Start";
     
-    string temp=convertInt(score);
+    string temp=convertInt(ship->score);
     
     glColor3f(.56,.75,.23);
     glRasterPos2f(WINDOW_WIDTH / 2 - 100, WINDOW_HEIGHT / 2 + 250);
@@ -450,7 +405,7 @@ void gameOver() {
     string txtTotalScore="Total Score : ";
     string txtRestart="Press r to restart";
     
-    string temp=convertInt(score);
+    string temp=convertInt(ship->score);
     
     glColor3f(.26,.32,.77);
     glRasterPos2f(WINDOW_WIDTH / 2 - 100, WINDOW_HEIGHT / 2 + 100);
@@ -491,15 +446,15 @@ void display() {
     ship_bullets->draw();
     
     enemy->draw();
-    (new Bullet(enemy->centerX() - 7, enemy->centerY() - 30, 5, 25))->draw();
-    
-    enemiesBulletObserver->draw();
+    enemy_bullets->draw();
     
     
-    string scoreStr="Score: "+ convertInt(score);
-    string healthStr="Health: "+ convertInt(health);
-    rendertext(10, WINDOW_HEIGHT-20, healthStr);
-    rendertext(10, WINDOW_HEIGHT-40, scoreStr);
+    string scoreStr="Score: "+ convertInt(ship->score);
+    rendertext(10, WINDOW_HEIGHT-20, scoreStr);
+    
+    string healthStr="Health: "+ convertInt(enemy->health);
+    rendertext(WINDOW_WIDTH - 150, WINDOW_HEIGHT-20, healthStr);
+    
     
     
     glFlush();
@@ -511,55 +466,26 @@ void display() {
 //          Timer Function
 // -----------------------------------
 
-
-
-bool dead(){
-    return (lives < 0);
-}
-
-void levelUp(){
-    level++;
-    if(speed > 20)
-        speed-=10;
-    
-    //    if(bulletYieldIndex < 19)
-    //        bulletYieldIndex--;
-    //    resetElements();
-    //    enemies->generate();
-}
-
 void myTimer( int valor) {
-    ship_bullets->update(10);
-    cout<<"Timer:: Bullet Movement\n";
-    if(!paused && !init){
-        ship_bullets->update(10);
-        enemiesBulletObserver->update(-1);
-        if( !dead() && !enemy->update()){
-            glutTimerFunc(speed,myTimer,1);
-            int scum = score;
-            score += collider->checkForCollisions();
-            if(score > scum)
-                levelUpeado = false;
-            //RESET
-            if(score > 1 && score%320 == 0 && !levelUpeado){
-                levelUp();
-                levelUpeado = true;
-            }
-            if(bulletYield == 0){
-                enemiesBulletObserver->addBullet(enemy->shoot(ship->x));
-                bulletYield = 20 - bulletYieldIndex;
-            }else
-                bulletYield--;
-            
-            //            if(ship->checkForCollisions() > 0)
-            //                lives--;
-        }
-    }else{
-        //TODO
-        //render pause
-        glutTimerFunc(speed,myTimer,1);
+    ship_bullets->update(BULLET_SPEED);
+    
+    enemy->bullet_timer += 10;
+    if (enemy->bullet_timer == 300) {
+        enemy->bullet_timer = 0;
+        enemy_bullets->addBullet(enemy->shoot());
     }
+    enemy_bullets->update(-BULLET_SPEED);
+
+    
+    glutTimerFunc(speed,myTimer,1);
     glutPostRedisplay();
+}
+
+
+void Anim() {
+    int collision_amount = collider->checkForCollisions();
+    ship->score += collision_amount;
+    enemy->health -= collision_amount / 2;
 }
 
 
