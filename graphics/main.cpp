@@ -9,13 +9,20 @@
 #include <GL/glu.h>
 #include <GL/gl.h>
 #endif
+#include <stdlib.h>
+#include <stdio.h>
+#include <string>
+#include <iostream>
+#include <sstream>
+
+using namespace std;
 
 // -----------------------------------
-//          Constant
+//              Constant
 // -----------------------------------
 #define WINDOW_WIDTH 1200
 #define WINDOW_HEIGHT 800
-
+#define STEP 50
 
 // -----------------------------------
 //          Methods Signatures
@@ -56,6 +63,7 @@ public:
     }
     
     void draw(){
+        glColor3f(1.0, 0.0, 0.0);
         drawRect(x, y, width, height);
     }
     
@@ -65,6 +73,89 @@ public:
     
     double centerY(){
         return this->y + (this->height)/2;
+    }
+
+};
+
+
+class Bullet : public Object {
+public:
+    Bullet(double xx, double xy, double xwidth, double xheight):Object(xx,xy,xwidth,xheight) {}
+    Bullet(double xx, double xy):Object(xx,xy,1,1) {}
+};
+
+class BulletNode{
+public:
+    Bullet* bullet;
+    BulletNode* next;
+    
+    BulletNode() {
+        this->bullet = NULL;
+        this->next = NULL;
+    }
+    
+    BulletNode(Bullet* bullet) {
+        this->bullet = bullet;
+        this->next = NULL;
+    }
+    
+    void add(Bullet* bullet){
+        if(this->bullet == NULL)
+            this->bullet = bullet;
+        else{
+            BulletNode *node = this;
+            while(node->next != NULL) node = node->next;
+            node->next = new BulletNode(bullet);
+        }
+    }
+
+};
+
+class BulletObserver{
+    
+public:
+    BulletNode* bulletList;
+    
+    BulletObserver() { this->bulletList = NULL; }
+    
+    void addBullet(Bullet* bullet){
+        if(bullet != NULL){
+            if(this->bulletList == NULL)
+                this->setBullet(bullet);
+            else
+                this->bulletList->add(bullet);
+        }
+    }
+    
+    void setBullet(Bullet* bullet){
+        if(bullet != NULL)
+            this->bulletList = new BulletNode(bullet);
+    }
+    
+    void draw(){
+        BulletNode *node = this->bulletList;
+        while(node != NULL){
+//            cout<<"Draw bullet";
+//            cout<<node->bullet->x<<" "<<node->bullet->y<<" "<<node->bullet->width<<node->bullet->height;
+            if(node->bullet->y > 100 )
+                this->bulletList = NULL;
+            else
+                if (node->bullet->y > -90)
+                    node->bullet->draw();
+            node = node->next;
+        }
+    }
+    
+    void update(int n){
+        BulletNode *node = this->bulletList;
+        while(node != NULL){
+            node->bullet->translateY(n);
+            node = node->next;
+        }
+    }
+    
+    bool isEmpty(){
+        return (this->bulletList == NULL);
     }
 
 };
@@ -124,6 +215,10 @@ public:
         glVertex2f(x + 25, y + 25);
         glEnd();
     }
+    
+    Bullet* shoot(){
+        return new Bullet(this->centerX(), this->centerY(), 10, 10);
+    }
 };
 
 
@@ -143,10 +238,12 @@ public:
 
 
 
+
 // -----------------------------------
 //          Global Variables
 // -----------------------------------
 SpaceShip *ship = new SpaceShip(WINDOW_WIDTH / 2, 50, 50, 50);
+BulletObserver *bulletObserver = new BulletObserver();
 Enemy *enemy = new Enemy(WINDOW_WIDTH / 2, WINDOW_HEIGHT - 50, 10, 10);
 
 // -----------------------------------
@@ -174,10 +271,10 @@ void drawCircle(int x, int y, float r) {
 void keyboardListener(unsigned char key, int x, int y) {
     switch (key) {
         case 'a':
-            ship->translateX(-10);
+            ship->translateX(-STEP);
             break;
         case 'd':
-            ship->translateX(10);
+            ship->translateX(STEP);
             break;
         default:
             break;
@@ -191,6 +288,7 @@ void display() {
     
     ship->draw();
     enemy->draw();
+    bulletObserver->draw();
     
     glFlush();
 }
@@ -200,6 +298,7 @@ void display() {
 // -----------------------------------
 int main(int argc, char** argv) {
     /* Initializers */
+    srand((unsigned)time(0));
     glutInit(&argc, argv);
     glutInitWindowSize(WINDOW_WIDTH, WINDOW_HEIGHT);
     glutInitDisplayMode(GLUT_SINGLE | GLUT_RGB);
@@ -209,9 +308,6 @@ int main(int argc, char** argv) {
     /* Callbacks */
     glutDisplayFunc(display);
     glutKeyboardFunc(keyboardListener);
-//    glutKeyboardUpFunc(KeyUp);
-//    glutMouseFunc(mouseListener);
-//    glutTimerFunc(GameWorld::REFRESH_RATE, update, 0);
     
     glClearColor(1, 1, 1, 0);
     gluOrtho2D(0, WINDOW_WIDTH, 0, WINDOW_HEIGHT);
