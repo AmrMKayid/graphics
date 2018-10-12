@@ -20,7 +20,7 @@ using namespace std;
 // -----------------------------------
 //              Constant
 // -----------------------------------
-#define WINDOW_WIDTH 1200
+#define WINDOW_WIDTH 1400
 #define WINDOW_HEIGHT 800
 #define STEP 70
 
@@ -46,6 +46,7 @@ void drawCircle(int x, int y, float r);
 // -----------------------------------
 //              Classes
 // -----------------------------------
+
 class Object{
     
 public:
@@ -223,7 +224,7 @@ public:
     }
     
     Bullet* shoot(){
-        return new Bullet(this->centerX(), this->centerY(), 5, 25);
+        return new Bullet(this->centerX() - 8, this->centerY() + 35, 5, 25);
     }
 };
 
@@ -362,10 +363,10 @@ public:
 GLuint bg[1];
 int gamestate = 0, score = 0, health = 100, level = 0, lives = 3, speed = 50, bulletYield = 0, bulletYieldIndex = 0;
 bool paused = true, init = true, levelUpeado = true;
-SpaceShip *ship = new SpaceShip(WINDOW_WIDTH / 2, 50, 50, 50);
+SpaceShip *ship = new SpaceShip(WINDOW_WIDTH / 2, 50, 10, 10);
+BulletObserver *ship_bullets = new BulletObserver();
 Enemy *enemy = new Enemy(WINDOW_WIDTH / 2, WINDOW_HEIGHT - 50, 10, 10);
-BulletObserver *bulletObserver = new BulletObserver();
-Collider *collider = new Collider(bulletObserver, enemy);
+Collider *collider = new Collider(ship_bullets, enemy);
 BulletObserver *enemiesBulletObserver = new BulletObserver();
 ColliderShip *colliderShip = new ColliderShip(enemiesBulletObserver, ship);
 
@@ -387,7 +388,6 @@ int main(int argc, char** argv) {
     glutKeyboardFunc(keyboardListener);
     glutSpecialFunc(keyboardSpecialListener);
     glutTimerFunc(speed, myTimer, 1);
-    
     
     glClearColor(1, 1, 1, 0);
     gluOrtho2D(0, WINDOW_WIDTH, 0, WINDOW_HEIGHT);
@@ -487,11 +487,12 @@ void display() {
     start:
     glClear(GL_COLOR_BUFFER_BIT|GL_DEPTH_BUFFER_BIT);
     
-    enemy->draw();
     ship->draw();
-    (new Bullet(WINDOW_WIDTH / 2, WINDOW_HEIGHT / 2, 5, 25))->draw();
-    (new Bullet(WINDOW_WIDTH / 2 - 10, WINDOW_HEIGHT / 2, 5, 25))->draw();
-    bulletObserver->draw();
+    ship_bullets->draw();
+    
+    enemy->draw();
+    (new Bullet(enemy->centerX() - 7, enemy->centerY() - 30, 5, 25))->draw();
+    
     enemiesBulletObserver->draw();
     
     
@@ -528,8 +529,10 @@ void levelUp(){
 }
 
 void myTimer( int valor) {
+    ship_bullets->update(10);
+    cout<<"Timer:: Bullet Movement\n";
     if(!paused && !init){
-        bulletObserver->update(10);
+        ship_bullets->update(10);
         enemiesBulletObserver->update(-1);
         if( !dead() && !enemy->update()){
             glutTimerFunc(speed,myTimer,1);
@@ -567,11 +570,11 @@ void myTimer( int valor) {
 void keyboardListener(unsigned char key, int x, int y) {
     switch(key){
         case 32:
-            if(!paused){
-                if(bulletObserver->isEmpty()){
-                    Bullet *bullet = ship->shoot();
-                    bulletObserver->setBullet(bullet);
-                }
+            if(ship_bullets->isEmpty()){
+                Bullet *bullet = ship->shoot();
+                ship_bullets->setBullet(bullet);
+            } else {
+                ship_bullets->addBullet(ship->shoot());
             }
             break;
         case 'R':
@@ -582,6 +585,8 @@ void keyboardListener(unsigned char key, int x, int y) {
         case 'p':
             gamestate=1;
             break;
+        case 27:
+            exit(0);
     }
     
     glutPostRedisplay();
