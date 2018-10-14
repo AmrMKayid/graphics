@@ -47,6 +47,8 @@ void releaseKey(int key, int x, int y);
 
 void ship_movement();
 void enemy_movement();
+void ship_shooting();
+void enemy_shooting();
 
 void init_bezier();
 int* bezier(float t, int* p0,int* p1,int* p2,int* p3);
@@ -189,13 +191,15 @@ public:
 
 class SpaceShip : public Object {
 public:
-    int score;
-    bool is_moving_right, is_moving_left;
+    int score, bullet_timer;
+    bool is_moving_right, is_moving_left, is_firing;
     
     SpaceShip(double xx, double xy, double xwidth, double xheight):Object(xx,xy,xwidth,xheight) {
         score = 0;
+        bullet_timer = 0;
         is_moving_right = false;
         is_moving_left = false;
+        is_firing = false;
     }
     
     void draw(){
@@ -534,22 +538,15 @@ void display() {
 void myTimer(int value) {
 
     ship_movement();
+    ship_shooting();
     
     enemy_movement();
+    enemy_shooting();
     
     enemy_defender->translateX(-4*(STEP + STEP));
     if(enemy_defender->x < 0) {
         enemy_defender->x = WINDOW_WIDTH;
     }
-    
-    ship_bullets->update(BULLET_SPEED);
-    
-    enemy->bullet_timer += 10;
-    if (enemy->bullet_timer == 300) {
-        enemy->bullet_timer = 0;
-        enemy_bullets->addBullet(enemy->shoot());
-    }
-    enemy_bullets->update(-BULLET_SPEED);
 
     glutTimerFunc(0, myTimer, 0);
     glutPostRedisplay();
@@ -574,12 +571,7 @@ void Anim() {
 void keyboardListener(unsigned char key, int x, int y) {
     switch(key){
         case 32:
-            if(ship_bullets->isEmpty()){
-                Bullet *bullet = ship->shoot();
-                ship_bullets->setBullet(bullet);
-            } else {
-                ship_bullets->addBullet(ship->shoot());
-            }
+            ship->is_firing = true;
             break;
         case 'R':
         case 'r':
@@ -619,6 +611,9 @@ void releaseKey(int key, int x, int y) {
         case GLUT_KEY_LEFT:
             ship->is_moving_left = false;
             break;
+        case 32:
+            ship->is_firing = false;
+            break;
     }
 }
 
@@ -650,6 +645,32 @@ void enemy_movement() {
     int enemy_newX = res[0], enemy_newY = res[1];
     enemy->x = enemy_newX;
     enemy->y = enemy_newY;
+}
+
+void ship_shooting() {
+    if(ship->is_firing) {
+        ship->bullet_timer += 10;
+        if (ship->bullet_timer == 30) {
+            ship->bullet_timer = 0;
+            if(ship_bullets->isEmpty()){
+                Bullet *bullet = ship->shoot();
+                ship_bullets->setBullet(bullet);
+            } else {
+                ship_bullets->addBullet(ship->shoot());
+            }
+        }
+    }
+    
+    ship_bullets->update(BULLET_SPEED);
+}
+
+void enemy_shooting() {
+    enemy->bullet_timer += 10;
+    if (enemy->bullet_timer == 300) {
+        enemy->bullet_timer = 0;
+        enemy_bullets->addBullet(enemy->shoot());
+    }
+    enemy_bullets->update(-BULLET_SPEED);
 }
 
 int* bezier(float t, int* p0,int* p1,int* p2,int* p3) {
