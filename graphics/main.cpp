@@ -189,10 +189,14 @@ public:
 
 class SpaceShip : public Object {
 public:
-    int score = 0;
-    bool is_moving_right = false, is_moving_left = false;
+    int score;
+    bool is_moving_right, is_moving_left;
     
-    SpaceShip(double xx, double xy, double xwidth, double xheight):Object(xx,xy,xwidth,xheight) {}
+    SpaceShip(double xx, double xy, double xwidth, double xheight):Object(xx,xy,xwidth,xheight) {
+        score = 0;
+        is_moving_right = false;
+        is_moving_left = false;
+    }
     
     void draw(){
         glPointSize(10.0);
@@ -255,10 +259,12 @@ public:
 
 class Enemy : public Object {
 public:
-    int health = 100;
-    int bullet_timer = 0;
+    int health, bullet_timer;
     
-    Enemy(double xx, double xy, double xwidth, double xheight):Object(xx,xy,xwidth,xheight) {}
+    Enemy(double xx, double xy, double xwidth, double xheight):Object(xx,xy,xwidth,xheight) {
+        health = 100;
+        bullet_timer = 0;
+    }
 
     void draw() {
         glColor3f(1.0, 0.0, 0.0);
