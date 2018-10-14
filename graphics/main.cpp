@@ -51,6 +51,7 @@ void ship_shooting();
 void enemy_shooting();
 
 void init_bezier();
+void new_bezier();
 int* bezier(float t, int* p0,int* p1,int* p2,int* p3);
 
 void restart();
@@ -58,6 +59,7 @@ string convertInt(int number);
 void rendertext(float x,float y, string strings);
 void drawRect(int x, int y, int w, int h);
 void drawCircle(int x, int y, float r);
+int random(int n, int m);
 
 // -----------------------------------
 //              Classes
@@ -393,7 +395,7 @@ int p0[2], p1[2], p2[2], p3[2];
 double t = 0, beizer_timer = 0;
 bool movement_reverse = false;
 
-SpaceShip *ship = new SpaceShip(WINDOW_WIDTH / 2, 50, 70, 70);
+SpaceShip *ship = new SpaceShip(WINDOW_WIDTH / 2, 30, 70, 70);
 BulletObserver *ship_bullets = new BulletObserver();
 
 Enemy *enemy = new Enemy(WINDOW_WIDTH / 2, WINDOW_HEIGHT - 100, 50, 50);
@@ -663,14 +665,16 @@ void ship_movement() {
 
 void enemy_movement() {
     beizer_timer += 30;
-    if(beizer_timer > 100) {
+    if(beizer_timer > 50) {
         beizer_timer = 0;
-        t += (movement_reverse)? (-0.01) : (0.01);
+        t += (movement_reverse)? (-0.05) : (0.05);
     }
-    if(t > 0.9) {
+    if(t > 0.99) {
         movement_reverse = true;
-    } else if(t < 0.1) {
+        // new_bezier();
+    } else if(t < 0.01) {
         movement_reverse = false;
+        // new_bezier();
     }
     int *res = bezier(t, p0, p1, p2, p3);
     
@@ -726,6 +730,11 @@ void init_bezier() {
     p3[1]=WINDOW_WIDTH / 4 + 100;
 }
 
+void new_bezier() {
+    p1[0]=random(50, WINDOW_WIDTH - 50);
+    p3[0]=random(50, WINDOW_WIDTH - 50);
+}
+
 void restart() {
     ship = new SpaceShip(WINDOW_WIDTH / 2, 50, 30, 30);
     enemy = new Enemy(WINDOW_WIDTH / 2, WINDOW_HEIGHT - 100, 50, 50);
@@ -769,4 +778,8 @@ void rendertext(float x,float y, string strings) {
     glEnable(GL_TEXTURE);
     glEnable(GL_TEXTURE_2D);
     
+}
+
+int random(int n, int m) {
+    return rand() % (m - n + 1) + n;
 }
