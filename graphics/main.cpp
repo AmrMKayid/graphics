@@ -16,6 +16,7 @@
 #include <iostream>
 #include <sstream>
 
+
 using namespace std;
 
 // -----------------------------------
@@ -36,15 +37,19 @@ void gameMenu();
 void display();
 void gameOver();
 
-void myTimer( int valor);
+void myTimer(int value);
 void Anim();
 
 void keyboardListener(unsigned char key, int x, int y);
 void keyboardSpecialListener(int key, int x, int y);
+void releaseKey(int key, int x, int y);
 
+void ship_movement();
 void enemy_movement();
-int* bezier(float t, int* p0,int* p1,int* p2,int* p3);
+
 void init_bezier();
+int* bezier(float t, int* p0,int* p1,int* p2,int* p3);
+
 void restart();
 string convertInt(int number);
 void rendertext(float x,float y, string strings);
@@ -184,6 +189,7 @@ public:
 class SpaceShip : public Object {
 public:
     int score = 0;
+    bool is_moving_right = false, is_moving_left = false;
     
     SpaceShip(double xx, double xy, double xwidth, double xheight):Object(xx,xy,xwidth,xheight) {}
     
@@ -375,6 +381,8 @@ int main(int argc, char** argv) {
     glutIdleFunc(Anim);
     glutKeyboardFunc(keyboardListener);
     glutSpecialFunc(keyboardSpecialListener);
+    glutIgnoreKeyRepeat(1);
+    glutSpecialUpFunc(releaseKey);
     glutTimerFunc(0, myTimer, 0);
     
     glClearColor(1, 1, 1, 0);
@@ -501,7 +509,9 @@ void display() {
 //          Timer Function
 // -----------------------------------
 
-void myTimer( int valor) {
+void myTimer(int value) {
+
+    ship_movement();
     
     enemy_movement();
     
@@ -567,10 +577,10 @@ void keyboardListener(unsigned char key, int x, int y) {
 void keyboardSpecialListener(int key, int x, int y) {
     switch (key) {
         case GLUT_KEY_RIGHT:
-            ship->translateX(STEP);
+            ship->is_moving_right = true;
             break;
         case GLUT_KEY_LEFT:
-            ship->translateX(-STEP);
+            ship->is_moving_left = true;
             break;
     }
     
@@ -578,9 +588,29 @@ void keyboardSpecialListener(int key, int x, int y) {
     glutPostRedisplay();
 }
 
+void releaseKey(int key, int x, int y) {
+
+    switch (key) {
+        case GLUT_KEY_RIGHT: 
+            ship->is_moving_right = false;
+            break;
+        case GLUT_KEY_LEFT:
+            ship->is_moving_left = false;
+            break;
+    }
+}
+
 // -----------------------------------
 //          Helper Methods
 // -----------------------------------
+
+void ship_movement() {
+    if(ship->is_moving_right) {
+        ship->translateX(STEP);
+    } else if(ship->is_moving_left) {
+        ship->translateX(-STEP);
+    }
+}
 
 void enemy_movement() {
     beizer_timer += 30;
