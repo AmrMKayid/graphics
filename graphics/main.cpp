@@ -207,56 +207,88 @@ public:
         
         glBegin(GL_POINTS);//front shooter
         glColor3f(1,1,1);//111
-        glVertex2f(x, y +40);
+        glVertex2f((x + (width / 2)), (y + (height / 2)) +40);
         glEnd();
         
         glBegin(GL_QUADS);
         glColor3f(0.137255,0.419608,0.556863);//middle body
-        glVertex2f(x - 25, y + 25);
-        glVertex2f(x - 25, y - 25);
-        glVertex2f(x + 25, y - 25);
-        glVertex2f(x + 25, y + 25);
+        glVertex2f((x + (width / 2)) - 25, (y + (height / 2)) + 25);
+        glVertex2f((x + (width / 2)) - 25, (y + (height / 2)) - 25);
+        glVertex2f((x + (width / 2)) + 25, (y + (height / 2)) - 25);
+        glVertex2f((x + (width / 2)) + 25, (y + (height / 2)) + 25);
         glEnd();
         
         glBegin(GL_POINTS);//design on middle
         glColor3f(0.90,0.91,0.98);
-        glVertex2f(x-10,y-5);
-        glVertex2f(x+10,y-5);
+        glVertex2f((x + (width / 2)) -10, (y + (height / 2)) -5);
+        glVertex2f((x + (width / 2)) +10, (y + (height / 2)) -5);
         glEnd();
         
         glBegin(GL_POINTS);//thrusters
         glColor3f(1,1,1);
-        glVertex2f(x-10,y-30);
-        glVertex2f(x+10,y-30);
+        glVertex2f((x + (width / 2)) -10, (y + (height / 2)) -30);
+        glVertex2f((x + (width / 2)) +10, (y + (height / 2)) -30);
         glEnd();
         
         glBegin(GL_TRIANGLES);//right wing
         glColor3f(0.196078,0.8,0.196078);
-        glVertex2f(x+25,y+25);
-        glVertex2f(x+25,y-25);
-        glVertex2f(x+45,y-35);
+        glVertex2f((x + (width / 2)) +25, (y + (height / 2)) +25);
+        glVertex2f((x + (width / 2)) +25, (y + (height / 2)) -25);
+        glVertex2f((x + (width / 2)) +45, (y + (height / 2)) -35);
         glEnd();
         
         glBegin(GL_TRIANGLES);//left wing
         glColor3f(0.196078,0.8,0.196078);
-        glVertex2f(x-25,y+25);
-        glVertex2f(x-25,y-25);
-        glVertex2f(x-45,y-35);
+        glVertex2f((x + (width / 2)) -25, (y + (height / 2)) +25);
+        glVertex2f((x + (width / 2)) -25, (y + (height / 2)) -25);
+        glVertex2f((x + (width / 2)) -45, (y + (height / 2)) -35);
         glEnd();
         
         
         glBegin(GL_QUADS);//up body
         glColor3f(0.99609, 0.83984, 0);
-        glVertex2f(x - 25, y + 25);
-        glVertex2f(x - 18, y + 40);
-        glVertex2f(x + 18, y + 40);
-        glVertex2f(x + 25, y + 25);
+        glVertex2f((x + (width / 2)) - 25, (y + (height / 2)) + 25);
+        glVertex2f((x + (width / 2)) - 18, (y + (height / 2)) + 40);
+        glVertex2f((x + (width / 2)) + 18, (y + (height / 2)) + 40);
+        glVertex2f((x + (width / 2)) + 25, (y + (height / 2)) + 25);
         glEnd();
+
+
+        // Borders
+        /*
+        glLineWidth(10); 
+        glColor3f(1.0, 0.0, 0.0);
+        glBegin(GL_LINES);
+        glVertex3f(x, y, 0.0);
+        glVertex3f(x + width, y, 0);
+        glEnd();
+
+        glLineWidth(10); 
+        glColor3f(1.0, 0.0, 0.0);
+        glBegin(GL_LINES);
+        glVertex3f(x + width, y, 0.0);
+        glVertex3f(x + width, y + height, 0);
+        glEnd();
+
+        glLineWidth(10); 
+        glColor3f(1.0, 0.0, 0.0);
+        glBegin(GL_LINES);
+        glVertex3f(x + width, y + height, 0.0);
+        glVertex3f(x, y + height, 0);
+        glEnd();
+
+        glLineWidth(10); 
+        glColor3f(1.0, 0.0, 0.0);
+        glBegin(GL_LINES);
+        glVertex3f(x, y + height, 0.0);
+        glVertex3f(x, y, 0);
+        glEnd();
+        */
     }
 
     
     Bullet* shoot(){
-        return new Bullet(this->centerX() - 17, this->centerY() + 35, 5, 25);
+        return new Bullet(this->centerX() - 3, this->centerY() + 30, 5, 25);
     }
 };
 
@@ -361,7 +393,7 @@ int p0[2], p1[2], p2[2], p3[2];
 double t = 0, beizer_timer = 0;
 bool movement_reverse = false;
 
-SpaceShip *ship = new SpaceShip(WINDOW_WIDTH / 2, 50, 30, 30);
+SpaceShip *ship = new SpaceShip(WINDOW_WIDTH / 2, 50, 70, 70);
 BulletObserver *ship_bullets = new BulletObserver();
 
 Enemy *enemy = new Enemy(WINDOW_WIDTH / 2, WINDOW_HEIGHT - 100, 50, 50);
@@ -509,7 +541,7 @@ void display() {
     }
 
     ship_bullets->draw();
-    
+
     enemy->draw();
     enemy_bullets->draw();
     
