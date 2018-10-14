@@ -24,6 +24,7 @@ using namespace std;
 // -----------------------------------
 #define WINDOW_WIDTH 1400
 #define WINDOW_HEIGHT 800
+#define ANGEL 1
 #define STEP 10
 #define BULLET_SPEED 10
 #define SCORE_PLUS 10
@@ -483,13 +484,28 @@ void display() {
     start:
     glClear(GL_COLOR_BUFFER_BIT|GL_DEPTH_BUFFER_BIT);
     
-    ship->draw();
+    if(ship->is_moving_right) {
+        glPushMatrix(); 
+        glRotatef(-ANGEL, 0, 0, 1);
+        ship->draw();
+        glPopMatrix();
+    } else if(ship->is_moving_left) {
+        glPushMatrix(); 
+        glRotatef(ANGEL, 0, 0, 1);
+        ship->draw();
+        glPopMatrix();
+    } else {
+        ship->draw();
+    }
+
     ship_bullets->draw();
     
     enemy->draw();
     enemy_bullets->draw();
     
     enemy_defender->draw();
+
+    
     
     
     string scoreStr="Score: "+ convertInt(ship->score);
