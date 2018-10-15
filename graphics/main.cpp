@@ -25,8 +25,8 @@ using namespace std;
 #define WINDOW_WIDTH 1400
 #define WINDOW_HEIGHT 800
 #define ANGEL 10
-#define STEP 10
-#define BULLET_SPEED 10
+#define STEP 30
+#define BULLET_SPEED 20
 #define SCORE_PLUS 10
 
 // -----------------------------------
@@ -56,6 +56,7 @@ void init_bezier();
 void new_bezier();
 int* bezier(float t, int* p0,int* p1,int* p2,int* p3);
 
+void backgound();
 void restart();
 string convertInt(int number);
 void rendertext(float x,float y, string strings);
@@ -409,6 +410,7 @@ public:
 // -----------------------------------
 
 int gamestate = 0;
+int background_x=0, background_y=0, background_y2=-WINDOW_HEIGHT;
 int p0[2], p1[2], p2[2], p3[2];
 double t = 0, beizer_timer = 0;
 bool movement_reverse = false;
@@ -549,6 +551,8 @@ void gameOver() {
 void display() {
     start:
     glClear(GL_COLOR_BUFFER_BIT|GL_DEPTH_BUFFER_BIT);
+
+    backgound();
     
     if(ship->is_moving_right) {
         glPushMatrix(); 
@@ -608,6 +612,9 @@ void myTimer(int value) {
     if(enemy_defender->x < 0) {
         enemy_defender->x = WINDOW_WIDTH;
     }
+
+    background_y = (background_y >= WINDOW_HEIGHT)? 0 : background_y + 10;
+    background_y2 = (background_y2 >= 0)? -WINDOW_HEIGHT : background_y2 + 10;
 
     powerups_movement();
 
@@ -768,6 +775,34 @@ void checkForPowerUps() {
 // -----------------------------------
 //          Helper Methods
 // -----------------------------------
+
+
+void backgound() {
+    glPushMatrix(); 
+    glColor3f(0.0, 0.0, 0.0);
+    drawRect(background_x, background_y, WINDOW_WIDTH, WINDOW_HEIGHT);
+
+    for(int i = 0; i < 10; ++i) {
+        glColor3f(1.0, 1.0, 1.0);
+        drawCircle(random(0, WINDOW_WIDTH), random(0, WINDOW_HEIGHT), 5);
+    }
+
+    glPopMatrix();
+
+
+
+
+    glPushMatrix(); 
+    glColor3f(0.01, 0.01, 0.01);
+    drawRect(background_x, background_y2, WINDOW_WIDTH, WINDOW_HEIGHT);
+
+    for(int i = 0; i < 10; ++i) {
+        glColor3f(1.0, 0.5, 1.0);
+        drawCircle(random(0, WINDOW_WIDTH), random(0, WINDOW_HEIGHT), 5);
+    }
+
+    glPopMatrix();
+}
 
 int* bezier(float t, int* p0,int* p1,int* p2,int* p3) {
     int res[2];
