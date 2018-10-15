@@ -50,6 +50,7 @@ void ship_movement();
 void enemy_movement();
 void ship_shooting();
 void enemy_shooting();
+void enemy_defender_appearance();
 void powerups_movement();
 void checkForPowerUps();
 
@@ -415,7 +416,7 @@ public:
 int gamestate = 0, level = 1;
 int background_x=0, background_y=0, background_y2=-WINDOW_HEIGHT;
 int p0[2], p1[2], p2[2], p3[2];
-double t = 0, beizer_timer = 0, new_enemy_timer = 0;
+double t = 0, beizer_timer = 0, new_enemy_timer = 0, enemy_defender_timer = 0;
 bool movement_reverse = false, restart = false, enemy_dead = false, isleveledUp = false;
 
 SpaceShip *ship = new SpaceShip(WINDOW_WIDTH / 2, 30, 70, 70);
@@ -570,7 +571,7 @@ void display() {
     if(!enemy_dead) {
         enemy->draw();
         enemy_bullets->draw();
-        // enemy_defender->draw();
+        enemy_defender->draw();
     }
 
     pu1->draw();
@@ -606,10 +607,7 @@ void myTimer(int value) {
     enemy_movement();
     enemy_shooting();
     
-    enemy_defender->translateX(-4*(STEP + STEP));
-    if(enemy_defender->x < 0) {
-        enemy_defender->x = WINDOW_WIDTH;
-    }
+    enemy_defender_appearance();
 
     background_y = (background_y >= WINDOW_HEIGHT)? 0 : background_y + 10;
     background_y2 = (background_y2 >= 0)? -WINDOW_HEIGHT : background_y2 + 10;
@@ -639,6 +637,7 @@ void Anim() {
         colliderShip = new ColliderShip(enemy_bullets, ship);
         restart = false;
         gamestate=1;
+        level = 1;
     }
 
     checkForPowerUps();
@@ -754,6 +753,19 @@ void enemy_shooting() {
         enemy_bullets->addBullet(enemy->shoot());
     }
     enemy_bullets->update(-BULLET_SPEED);
+}
+
+void enemy_defender_appearance() {
+    enemy_defender_timer += 10;
+    if (enemy_defender_timer == 300) {
+        enemy_defender_timer = 0;
+        enemy_defender->translateX(-4*(STEP + STEP));
+        if(enemy_defender->x < 0) {
+            enemy_defender->x = WINDOW_WIDTH;
+        }
+        enemy_bullets->addBullet(enemy_defender->shoot());
+    }
+    
 }
 
 void powerups_movement() {
@@ -902,7 +914,9 @@ string convertInt(int number) {
 
 void rendertext(float x,float y, string strings) {
     
-    glColor3f(.26,.32,.77);
+    // glColor3f(.26,.32,.77);
+
+    glColor3f(1, 1, 1);
     
     glRasterPos2d(x,y);
     glDisable(GL_TEXTURE);
