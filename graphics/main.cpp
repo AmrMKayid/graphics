@@ -24,7 +24,7 @@ using namespace std;
 // -----------------------------------
 #define WINDOW_WIDTH 1400
 #define WINDOW_HEIGHT 800
-#define ANGEL 1
+#define ANGEL 10
 #define STEP 10
 #define BULLET_SPEED 10
 #define SCORE_PLUS 10
@@ -552,12 +552,16 @@ void display() {
     
     if(ship->is_moving_right) {
         glPushMatrix(); 
+        glTranslatef((ship->x + (ship->width / 2)), (ship->y + (ship->height / 2)), 1);
         glRotatef(-ANGEL, 0, 0, 1);
+        glTranslatef(-(ship->x + (ship->width / 2)), -(ship->y + (ship->height / 2)), -1);
         ship->draw();
         glPopMatrix();
     } else if(ship->is_moving_left) {
-        glPushMatrix(); 
+        glPushMatrix();
+        glTranslatef((ship->x + (ship->width / 2)), (ship->y + (ship->height / 2)), 1); 
         glRotatef(ANGEL, 0, 0, 1);
+        glTranslatef(-(ship->x + (ship->width / 2)), -(ship->y + (ship->height / 2)), -1);
         ship->draw();
         glPopMatrix();
     } else {
