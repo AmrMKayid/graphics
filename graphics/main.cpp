@@ -555,7 +555,7 @@ void display() {
     start:
     glClear(GL_COLOR_BUFFER_BIT|GL_DEPTH_BUFFER_BIT);
 
-    // backgound();
+    backgound();
     
     
     draw_ship();
@@ -628,7 +628,7 @@ void Anim() {
 
     if(restart && gamestate != 1) {
         ship = new SpaceShip(WINDOW_WIDTH / 2, 30, 70, 70);
-        enemy = new Enemy(WINDOW_WIDTH / 2, WINDOW_HEIGHT - 100, 50, 50, HEALTH(level));
+        enemy = new Enemy(WINDOW_WIDTH / 2, WINDOW_HEIGHT - 100, 50, 50, HEALTH(1));
         collider = new Collider(ship_bullets, enemy);
         colliderShip = new ColliderShip(enemy_bullets, ship);
         restart = false;
@@ -787,21 +787,19 @@ void backgound() {
 
     for(int i = 0; i < 10; ++i) {
         glColor3f(1.0, 1.0, 1.0);
-        drawCircle(random(0, WINDOW_WIDTH), random(0, WINDOW_HEIGHT), 5);
+        drawCircle(random(0, WINDOW_WIDTH), random(0, WINDOW_HEIGHT), 1);
     }
 
     glPopMatrix();
 
 
-
-
     glPushMatrix(); 
-    glColor3f(0.01, 0.01, 0.01);
+    glColor3f(0.02, 0.02, 0.02);
     drawRect(background_x, background_y2, WINDOW_WIDTH, WINDOW_HEIGHT);
 
     for(int i = 0; i < 10; ++i) {
         glColor3f(1.0, 0.5, 1.0);
-        drawCircle(random(0, WINDOW_WIDTH), random(0, WINDOW_HEIGHT), 5);
+        drawCircle(random(0, WINDOW_WIDTH), random(0, WINDOW_HEIGHT), 1);
     }
 
     glPopMatrix();
