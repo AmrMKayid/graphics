@@ -344,10 +344,12 @@ class Collider {
 public:
     BulletObserver* bulletObserver;
     Enemy* enemy;
+    Enemy* enemy_defender;
     
-    Collider(BulletObserver* bulletObserver, Enemy* enemy){
+    Collider(BulletObserver* bulletObserver, Enemy* enemy, Enemy* enemy_defender){
         this->bulletObserver = bulletObserver;
         this->enemy = enemy;
+        this->enemy_defender = enemy_defender;
     }
     
     int checkForCollisions(){
@@ -356,7 +358,13 @@ public:
         BulletNode* current = bulletObserver->bulletList;
         
         while(current != NULL){
+            if (enemy_defender->collided(current->bullet->x, current->bullet->y)) {
+                current->bullet->x = -10;
+                current->bullet->y = -10;
+            }
             if(enemy->collided(current->bullet->x, current->bullet->y)){
+                current->bullet->x = -10;
+                current->bullet->y = -10;
                 score += SCORE_PLUS;
                 if( previous == NULL)
                     bulletObserver->bulletList = current->next;
@@ -431,7 +439,7 @@ int powerups_timer = 0;
 Powerups *pu1 = new Powerups(random(50, WINDOW_WIDTH), 0, 30, 30, 1);
 Powerups *pu2 = new Powerups(random(50, WINDOW_WIDTH), 0, 30, 30, 2);
 
-Collider *collider = new Collider(ship_bullets, enemy);
+Collider *collider = new Collider(ship_bullets, enemy, enemy_defender);
 ColliderShip *colliderShip = new ColliderShip(enemy_bullets, ship);
 
 
@@ -633,7 +641,7 @@ void Anim() {
     if(restart && gamestate != 1) {
         ship = new SpaceShip(WINDOW_WIDTH / 2, 30, 70, 70);
         enemy = new Enemy(WINDOW_WIDTH / 2, WINDOW_HEIGHT - 100, 50, 50, HEALTH(1));
-        collider = new Collider(ship_bullets, enemy);
+        collider = new Collider(ship_bullets, enemy, enemy_defender);
         colliderShip = new ColliderShip(enemy_bullets, ship);
         restart = false;
         gamestate=1;
@@ -849,7 +857,7 @@ void new_enemy() {
         new_enemy_timer += 10;
         if(new_enemy_timer == 300) {
             enemy = new Enemy(WINDOW_WIDTH / 2, WINDOW_HEIGHT - 100, 50, 50, HEALTH(level));
-            collider = new Collider(ship_bullets, enemy);
+            collider = new Collider(ship_bullets, enemy, enemy_defender);
             enemy_dead = false;
             isleveledUp = false;
             new_enemy_timer = 0;
