@@ -49,6 +49,8 @@ void ship_movement();
 void enemy_movement();
 void ship_shooting();
 void enemy_shooting();
+void powerups_movement();
+void checkForPowerUps();
 
 void init_bezier();
 void new_bezier();
@@ -188,6 +190,23 @@ public:
         return (this->bulletList == NULL);
     }
     
+};
+
+class Powerups : public Object {
+public:
+    int id;
+    Powerups(double xx, double xy, double xwidth, double xheight, int id):Object(xx,xy,xwidth,xheight) {
+        this->id = id;
+    }
+
+    void draw() {
+        if(id == 1) {
+            drawRect(x, y, width, height);
+        } else if(id == 2) {
+            drawCircle(x, y, (width + height) / 2);
+        }
+    }
+
 };
 
 
@@ -385,7 +404,6 @@ public:
 };
 
 
-
 // -----------------------------------
 //          Global Variables
 // -----------------------------------
@@ -402,6 +420,10 @@ Enemy *enemy = new Enemy(WINDOW_WIDTH / 2, WINDOW_HEIGHT - 100, 50, 50);
 BulletObserver *enemy_bullets = new BulletObserver();
 
 Enemy *enemy_defender = new Enemy(WINDOW_WIDTH, WINDOW_HEIGHT / 2, WINDOW_WIDTH / 10, 30);
+
+int powerups_timer = 0;
+Powerups *pu1 = new Powerups(random(50, WINDOW_WIDTH), 0, 30, 30, 1);
+Powerups *pu2 = new Powerups(random(50, WINDOW_WIDTH), 0, 30, 30, 2);
 
 Collider *collider = new Collider(ship_bullets, enemy);
 ColliderShip *colliderShip = new ColliderShip(enemy_bullets, ship);
@@ -549,7 +571,8 @@ void display() {
     
     enemy_defender->draw();
 
-    
+    pu1->draw();
+    pu2->draw();
     
     
     string scoreStr="Score: "+ convertInt(ship->score);
@@ -582,6 +605,8 @@ void myTimer(int value) {
         enemy_defender->x = WINDOW_WIDTH;
     }
 
+    powerups_movement();
+
     glutTimerFunc(0, myTimer, 0);
     glutPostRedisplay();
 }
@@ -595,6 +620,8 @@ void Anim() {
     if(colliderShip->checkForCollisions() > 0) {
         gamestate = 2;
     }
+
+    checkForPowerUps();
 }
 
 
@@ -652,7 +679,7 @@ void releaseKey(int key, int x, int y) {
 }
 
 // -----------------------------------
-//          Helper Methods
+//          Movement & Shooting
 // -----------------------------------
 
 void ship_movement() {
@@ -708,6 +735,35 @@ void enemy_shooting() {
     }
     enemy_bullets->update(-BULLET_SPEED);
 }
+
+void powerups_movement() {
+    powerups_timer += 10;
+    if (powerups_timer == 5000) {
+        pu1 = new Powerups(random(50, WINDOW_WIDTH - 50), WINDOW_HEIGHT, 30, 30, 1);
+    }
+    if (powerups_timer == 10000) {
+        pu2 = new Powerups(random(50, WINDOW_WIDTH - 50), WINDOW_HEIGHT, 30, 30, 2);
+        powerups_timer = 0;
+    }
+
+    pu1->translateY(-STEP);
+    pu2->translateY(-STEP);
+}
+
+
+void checkForPowerUps() {
+    if(ship->collided(pu1->x, pu1->y)) {
+        pu1->translateY(-1000);
+        enemy->health /= 2;
+    } else if(ship->collided(pu2->x, pu2->y)) {
+        pu2->translateY(-1000);
+        ship->score += 100;
+    }
+}
+
+// -----------------------------------
+//          Helper Methods
+// -----------------------------------
 
 int* bezier(float t, int* p0,int* p1,int* p2,int* p3) {
     int res[2];
