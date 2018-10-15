@@ -26,7 +26,7 @@ using namespace std;
 #define WINDOW_HEIGHT 800
 #define ANGEL 10
 #define STEP 30
-#define BULLET_SPEED 20
+#define BULLET_SPEED 10
 #define SCORE_PLUS 10
 #define HEALTH(level) (level * 10)
 
@@ -59,6 +59,7 @@ int* bezier(float t, int* p0,int* p1,int* p2,int* p3);
 
 void backgound();
 void draw_ship();
+void new_enemy();
 
 string convertInt(int number);
 void rendertext(float x,float y, string strings);
@@ -414,8 +415,8 @@ public:
 int gamestate = 0, level = 1;
 int background_x=0, background_y=0, background_y2=-WINDOW_HEIGHT;
 int p0[2], p1[2], p2[2], p3[2];
-double t = 0, beizer_timer = 0;
-bool movement_reverse = false, restart = false;
+double t = 0, beizer_timer = 0, new_enemy_timer = 0;
+bool movement_reverse = false, restart = false, enemy_dead = false, isleveledUp = false;
 
 SpaceShip *ship = new SpaceShip(WINDOW_WIDTH / 2, 30, 70, 70);
 BulletObserver *ship_bullets = new BulletObserver();
@@ -560,10 +561,11 @@ void display() {
     draw_ship();
     ship_bullets->draw();
 
-    enemy->draw();
-    enemy_bullets->draw();
-    
-    // enemy_defender->draw();
+    if(!enemy_dead) {
+        enemy->draw();
+        enemy_bullets->draw();
+        // enemy_defender->draw();
+    }
 
     pu1->draw();
     pu2->draw();
@@ -574,6 +576,10 @@ void display() {
     
     string healthStr="Health: "+ convertInt(enemy->health);
     rendertext(WINDOW_WIDTH - 150, WINDOW_HEIGHT-20, healthStr);
+
+    if(enemy_dead) {
+        rendertext(WINDOW_WIDTH / 2 - (WINDOW_WIDTH / 10), WINDOW_HEIGHT / 2, "YOU WON!! Level Up: "+ convertInt(level));
+    }
     
     
     
@@ -604,6 +610,8 @@ void myTimer(int value) {
 
     powerups_movement();
 
+    new_enemy();
+
     glutTimerFunc(0, myTimer, 0);
     glutPostRedisplay();
 }
@@ -613,11 +621,6 @@ void Anim() {
     int collision_amount = collider->checkForCollisions();
     ship->score += collision_amount;
     enemy->health -= collision_amount / 2;
-
-    if (enemy-> health <= 0) {
-        level++;
-        enemy = new Enemy(WINDOW_WIDTH / 2, WINDOW_HEIGHT - 100, 50, 50, HEALTH(level));
-    }
     
     if(colliderShip->checkForCollisions() > 0) {
         gamestate = 2;
@@ -821,6 +824,25 @@ void draw_ship() {
         glPopMatrix();
     } else {
         ship->draw();
+    }
+}
+
+void new_enemy() {
+    if (enemy-> health <= 0) {
+        enemy_dead = true;
+        new_enemy_timer += 10;
+        if(new_enemy_timer == 300) {
+            enemy = new Enemy(WINDOW_WIDTH / 2, WINDOW_HEIGHT - 100, 50, 50, HEALTH(level));
+            collider = new Collider(ship_bullets, enemy);
+            enemy_dead = false;
+            isleveledUp = false;
+            new_enemy_timer = 0;
+        }
+    }
+
+    if(enemy_dead && !isleveledUp) {
+        level++;
+        isleveledUp = true;
     }
 }
 
