@@ -57,7 +57,8 @@ void new_bezier();
 int* bezier(float t, int* p0,int* p1,int* p2,int* p3);
 
 void backgound();
-void restart();
+void draw_ship();
+
 string convertInt(int number);
 void rendertext(float x,float y, string strings);
 void drawRect(int x, int y, int w, int h);
@@ -413,7 +414,7 @@ int gamestate = 0;
 int background_x=0, background_y=0, background_y2=-WINDOW_HEIGHT;
 int p0[2], p1[2], p2[2], p3[2];
 double t = 0, beizer_timer = 0;
-bool movement_reverse = false;
+bool movement_reverse = false, restart = false;
 
 SpaceShip *ship = new SpaceShip(WINDOW_WIDTH / 2, 30, 70, 70);
 BulletObserver *ship_bullets = new BulletObserver();
@@ -552,32 +553,16 @@ void display() {
     start:
     glClear(GL_COLOR_BUFFER_BIT|GL_DEPTH_BUFFER_BIT);
 
-    backgound();
+    // backgound();
     
-    if(ship->is_moving_right) {
-        glPushMatrix(); 
-        glTranslatef((ship->x + (ship->width / 2)), (ship->y + (ship->height / 2)), 1);
-        glRotatef(-ANGEL, 0, 0, 1);
-        glTranslatef(-(ship->x + (ship->width / 2)), -(ship->y + (ship->height / 2)), -1);
-        ship->draw();
-        glPopMatrix();
-    } else if(ship->is_moving_left) {
-        glPushMatrix();
-        glTranslatef((ship->x + (ship->width / 2)), (ship->y + (ship->height / 2)), 1); 
-        glRotatef(ANGEL, 0, 0, 1);
-        glTranslatef(-(ship->x + (ship->width / 2)), -(ship->y + (ship->height / 2)), -1);
-        ship->draw();
-        glPopMatrix();
-    } else {
-        ship->draw();
-    }
-
+    
+    draw_ship();
     ship_bullets->draw();
 
     enemy->draw();
     enemy_bullets->draw();
     
-    enemy_defender->draw();
+    // enemy_defender->draw();
 
     pu1->draw();
     pu2->draw();
@@ -632,6 +617,15 @@ void Anim() {
         gamestate = 2;
     }
 
+    if(restart && gamestate != 1) {
+        ship = new SpaceShip(WINDOW_WIDTH / 2, 30, 70, 70);
+        enemy = new Enemy(WINDOW_WIDTH / 2, WINDOW_HEIGHT - 100, 50, 50);
+        collider = new Collider(ship_bullets, enemy);
+        colliderShip = new ColliderShip(enemy_bullets, ship);
+        restart = false;
+        gamestate=1;
+    }
+
     checkForPowerUps();
 }
 
@@ -647,7 +641,7 @@ void keyboardListener(unsigned char key, int x, int y) {
             break;
         case 'R':
         case 'r':
-            gamestate=1;
+            restart = true;
             break;
         case 'P':
         case 'p':
@@ -804,6 +798,26 @@ void backgound() {
     glPopMatrix();
 }
 
+void draw_ship() {
+    if(ship->is_moving_right) {
+        glPushMatrix(); 
+        glTranslatef((ship->x + (ship->width / 2)), (ship->y + (ship->height / 2)), 1);
+        glRotatef(-ANGEL, 0, 0, 1);
+        glTranslatef(-(ship->x + (ship->width / 2)), -(ship->y + (ship->height / 2)), -1);
+        ship->draw();
+        glPopMatrix();
+    } else if(ship->is_moving_left) {
+        glPushMatrix();
+        glTranslatef((ship->x + (ship->width / 2)), (ship->y + (ship->height / 2)), 1); 
+        glRotatef(ANGEL, 0, 0, 1);
+        glTranslatef(-(ship->x + (ship->width / 2)), -(ship->y + (ship->height / 2)), -1);
+        ship->draw();
+        glPopMatrix();
+    } else {
+        ship->draw();
+    }
+}
+
 int* bezier(float t, int* p0,int* p1,int* p2,int* p3) {
     int res[2];
     res[0]=pow((1-t),3)*p0[0]+3*t*pow((1-t),2)*p1[0]+3*pow(t,2)*(1-t)*p2[0]+pow(t,3)*p3[0];
@@ -828,11 +842,6 @@ void init_bezier() {
 void new_bezier() {
     p1[0]=random(50, WINDOW_WIDTH - 50);
     p3[0]=random(50, WINDOW_WIDTH - 50);
-}
-
-void restart() {
-    ship = new SpaceShip(WINDOW_WIDTH / 2, 50, 30, 30);
-    enemy = new Enemy(WINDOW_WIDTH / 2, WINDOW_HEIGHT - 100, 50, 50);
 }
 
 void drawRect(int x, int y, int w, int h) {
