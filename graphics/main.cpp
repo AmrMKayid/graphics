@@ -556,7 +556,13 @@ void display() {
     glClear(GL_COLOR_BUFFER_BIT|GL_DEPTH_BUFFER_BIT);
 
     backgound();
-    
+
+    // healthbar
+    glPushMatrix();
+    glColor3f(1.0, 0.0, 0.0);
+    double healthbar = ((enemy->health / ((double) HEALTH(level))));
+    drawRect(WINDOW_WIDTH - 250, WINDOW_HEIGHT - 50, healthbar * (230), 30);
+    glPopMatrix();
     
     draw_ship();
     ship_bullets->draw();
@@ -575,7 +581,7 @@ void display() {
     rendertext(10, WINDOW_HEIGHT-20, scoreStr);
     
     string healthStr="Health: "+ convertInt(enemy->health);
-    rendertext(WINDOW_WIDTH - 150, WINDOW_HEIGHT-20, healthStr);
+    rendertext(WINDOW_WIDTH - 170, WINDOW_HEIGHT-40, healthStr);
 
     if(enemy_dead) {
         rendertext(WINDOW_WIDTH / 2 - (WINDOW_WIDTH / 10), WINDOW_HEIGHT / 2, "YOU WON!! Level Up: "+ convertInt(level));
