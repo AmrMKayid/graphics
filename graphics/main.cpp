@@ -28,6 +28,7 @@ using namespace std;
 #define STEP 30
 #define BULLET_SPEED 20
 #define SCORE_PLUS 10
+#define HEALTH(level) (level * 10)
 
 // -----------------------------------
 //          Methods Signatures
@@ -320,8 +321,8 @@ class Enemy : public Object {
 public:
     int health, bullet_timer;
     
-    Enemy(double xx, double xy, double xwidth, double xheight):Object(xx,xy,xwidth,xheight) {
-        health = 100;
+    Enemy(double xx, double xy, double xwidth, double xheight, int health):Object(xx,xy,xwidth,xheight) {
+        this->health = health;
         bullet_timer = 0;
     }
 
@@ -410,7 +411,7 @@ public:
 //          Global Variables
 // -----------------------------------
 
-int gamestate = 0;
+int gamestate = 0, level = 1;
 int background_x=0, background_y=0, background_y2=-WINDOW_HEIGHT;
 int p0[2], p1[2], p2[2], p3[2];
 double t = 0, beizer_timer = 0;
@@ -419,10 +420,10 @@ bool movement_reverse = false, restart = false;
 SpaceShip *ship = new SpaceShip(WINDOW_WIDTH / 2, 30, 70, 70);
 BulletObserver *ship_bullets = new BulletObserver();
 
-Enemy *enemy = new Enemy(WINDOW_WIDTH / 2, WINDOW_HEIGHT - 100, 50, 50);
+Enemy *enemy = new Enemy(WINDOW_WIDTH / 2, WINDOW_HEIGHT - 100, 50, 50, HEALTH(level));
 BulletObserver *enemy_bullets = new BulletObserver();
 
-Enemy *enemy_defender = new Enemy(WINDOW_WIDTH, WINDOW_HEIGHT / 2, WINDOW_WIDTH / 10, 30);
+Enemy *enemy_defender = new Enemy(WINDOW_WIDTH, WINDOW_HEIGHT / 2, WINDOW_WIDTH / 10, 30, HEALTH(level));
 
 int powerups_timer = 0;
 Powerups *pu1 = new Powerups(random(50, WINDOW_WIDTH), 0, 30, 30, 1);
@@ -612,6 +613,11 @@ void Anim() {
     int collision_amount = collider->checkForCollisions();
     ship->score += collision_amount;
     enemy->health -= collision_amount / 2;
+
+    if (enemy-> health <= 0) {
+        level++;
+        enemy = new Enemy(WINDOW_WIDTH / 2, WINDOW_HEIGHT - 100, 50, 50, HEALTH(level));
+    }
     
     if(colliderShip->checkForCollisions() > 0) {
         gamestate = 2;
@@ -619,7 +625,7 @@ void Anim() {
 
     if(restart && gamestate != 1) {
         ship = new SpaceShip(WINDOW_WIDTH / 2, 30, 70, 70);
-        enemy = new Enemy(WINDOW_WIDTH / 2, WINDOW_HEIGHT - 100, 50, 50);
+        enemy = new Enemy(WINDOW_WIDTH / 2, WINDOW_HEIGHT - 100, 50, 50, HEALTH(level));
         collider = new Collider(ship_bullets, enemy);
         colliderShip = new ColliderShip(enemy_bullets, ship);
         restart = false;
