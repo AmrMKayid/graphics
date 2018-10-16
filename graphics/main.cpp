@@ -9,6 +9,7 @@
 #include <GL/glu.h>
 #include <GL/gl.h>
 #endif
+// #include <SFML/Audio.hpp>
 #include <stdlib.h>
 #include <stdio.h>
 #include <math.h>
@@ -719,16 +720,16 @@ void ship_movement() {
 
 void enemy_movement() {
     beizer_timer += 30;
-    if(beizer_timer > 50) {
+    if(beizer_timer > 70) {
         beizer_timer = 0;
         t += (movement_reverse)? (-0.05) : (0.05);
     }
     if(t > 0.99) {
         movement_reverse = true;
-        // new_bezier();
+        new_bezier();
     } else if(t < 0.01) {
         movement_reverse = false;
-        // new_bezier();
+        new_bezier();
     }
     int *res = bezier(t, p0, p1, p2, p3);
     
@@ -813,7 +814,7 @@ void backgound() {
 
     for(int i = 0; i < 10; ++i) {
         glColor3f(1.0, 1.0, 1.0);
-        drawCircle(random(0, WINDOW_WIDTH), random(0, WINDOW_HEIGHT), 1);
+        drawCircle(random(0, WINDOW_WIDTH), random(0, WINDOW_HEIGHT), 1.5);
     }
 
     glPopMatrix();
@@ -825,7 +826,7 @@ void backgound() {
 
     for(int i = 0; i < 10; ++i) {
         glColor3f(1.0, 0.5, 1.0);
-        drawCircle(random(0, WINDOW_WIDTH), random(0, WINDOW_HEIGHT), 1);
+        drawCircle(random(0, WINDOW_WIDTH), random(0, WINDOW_HEIGHT), 1.5);
     }
 
     glPopMatrix();
@@ -878,22 +879,24 @@ int* bezier(float t, int* p0,int* p1,int* p2,int* p3) {
 }
 
 void init_bezier() {
-    p0[0]=WINDOW_WIDTH / 4;
-    p0[1]=WINDOW_WIDTH / 4 + 100;
+    p0[0]=WINDOW_WIDTH / 10.0;
+    p0[1]=WINDOW_WIDTH / 4.0 + 100;
     
-    p1[0]=WINDOW_WIDTH / 4;
-    p1[1]=WINDOW_WIDTH / 4 + 400;
+    p1[0]=WINDOW_WIDTH / 10.0;
+    p1[1]=WINDOW_WIDTH / 4.0 + 400;
     
-    p2[0]=WINDOW_WIDTH / 4 + 800;
-    p2[1]=WINDOW_WIDTH / 4 + 400;
+    p2[0]=WINDOW_WIDTH / 10.0 + 800;
+    p2[1]=WINDOW_WIDTH / 4.0 + 400;
     
-    p3[0]=WINDOW_WIDTH / 4 + 800;
-    p3[1]=WINDOW_WIDTH / 4 + 100;
+    p3[0]=WINDOW_WIDTH / 10.0 + 800;
+    p3[1]=WINDOW_WIDTH / 4.0 + 100;
 }
 
 void new_bezier() {
     p1[0]=random(50, WINDOW_WIDTH - 50);
     p3[0]=random(50, WINDOW_WIDTH - 50);
+    p1[1]=random(WINDOW_HEIGHT / 2, WINDOW_HEIGHT - enemy->height);
+    p2[1]=random(WINDOW_HEIGHT / 2, WINDOW_HEIGHT - enemy->height);
 }
 
 void drawRect(int x, int y, int w, int h) {
