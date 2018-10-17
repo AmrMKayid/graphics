@@ -463,6 +463,7 @@ int background_x=0, background_y=0, background_y2=-WINDOW_HEIGHT;
 int p0[2], p1[2], p2[2], p3[2];
 double t = 0, beizer_timer = 0, new_enemy_timer = 0, enemy_defender_timer = 0;
 bool movement_reverse = false, restart = false, enemy_dead = false, isleveledUp = false;
+bool playGame = false;
 
 SpaceShip *ship = new SpaceShip(WINDOW_WIDTH / 2, 30, 70, 70);
 BulletObserver *ship_bullets = new BulletObserver();
@@ -647,47 +648,50 @@ void display() {
 // -----------------------------------
 
 void myTimer(int value) {
+    if(playGame) {
+        ship_movement();
+        ship_shooting();
+        
+        enemy_movement();
+        enemy_shooting();
+        
+        enemy_defender_appearance();
 
-    ship_movement();
-    ship_shooting();
-    
-    enemy_movement();
-    enemy_shooting();
-    
-    enemy_defender_appearance();
+        background_y = (background_y >= WINDOW_HEIGHT)? 0 : background_y + 10;
+        background_y2 = (background_y2 >= 0)? -WINDOW_HEIGHT : background_y2 + 10;
 
-    background_y = (background_y >= WINDOW_HEIGHT)? 0 : background_y + 10;
-    background_y2 = (background_y2 >= 0)? -WINDOW_HEIGHT : background_y2 + 10;
+        powerups_movement();
 
-    powerups_movement();
-
-    new_enemy();
-
+        new_enemy();
+    }
     glutTimerFunc(0, myTimer, 0);
     glutPostRedisplay();
 }
 
 
 void Anim() {
-    int collision_amount = collider->checkForCollisions();
-    ship->score += collision_amount;
-    enemy->health -= collision_amount / 2;
-    
-    if(colliderShip->checkForCollisions() > 0) {
-        gamestate = 2;
-    }
+    if(playGame) {
+        int collision_amount = collider->checkForCollisions();
+        ship->score += collision_amount;
+        enemy->health -= collision_amount / 2;
+        
+        if(colliderShip->checkForCollisions() > 0) {
+            gamestate = 2;
+            playGame = false;
+        }
 
-    if(restart && gamestate != 1) {
-        ship = new SpaceShip(WINDOW_WIDTH / 2, 30, 70, 70);
-        enemy = new Enemy(WINDOW_WIDTH / 2, WINDOW_HEIGHT - 200, 100, 100, HEALTH(1), 0);
-        collider = new Collider(ship_bullets, enemy, enemy_defender);
-        colliderShip = new ColliderShip(enemy_bullets, ship);
-        restart = false;
-        gamestate=1;
-        level = 1;
-    }
+        if(restart && gamestate != 1) {
+            ship = new SpaceShip(WINDOW_WIDTH / 2, 30, 70, 70);
+            enemy = new Enemy(WINDOW_WIDTH / 2, WINDOW_HEIGHT - 200, 100, 100, HEALTH(1), 0);
+            collider = new Collider(ship_bullets, enemy, enemy_defender);
+            colliderShip = new ColliderShip(enemy_bullets, ship);
+            restart = false;
+            gamestate=1;
+            level = 1;
+        }
 
-    checkForPowerUps();
+        checkForPowerUps();
+    }
 }
 
 
@@ -703,9 +707,11 @@ void keyboardListener(unsigned char key, int x, int y) {
         case 'R':
         case 'r':
             restart = true;
+            playGame = true;
             break;
         case 'P':
         case 'p':
+            playGame = true;
             gamestate=1;
             break;
         case 27:
