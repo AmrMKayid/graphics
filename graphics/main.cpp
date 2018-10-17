@@ -364,8 +364,47 @@ public:
             glPushMatrix();
             glColor3f(0.3, 0.3, 0.3);
             drawRect(x, y, width - 10, height - 10);
-            drawCircle(x + width - 10, y + 10, 20);
-            drawCircle(x - 10, y + 10, 20);
+            
+            glPointSize(5.0);
+            glBegin(GL_POINTS);
+            glColor3f(1.0, 1.0, 1.0);
+            glVertex2f(centerX() - 40, centerY() - 5);
+            glEnd();
+
+            glBegin(GL_POINTS);
+            glColor3f(1.0, 1.0, 1.0);
+            glVertex2f(centerX() - 30, centerY() - 5);
+            glEnd();
+
+            glBegin(GL_POINTS);
+            glColor3f(1.0, 1.0, 1.0);
+            glVertex2f(centerX() - 20, centerY() - 5);
+            glEnd();
+
+            glBegin(GL_POINTS);
+            glColor3f(1.0, 1.0, 1.0);
+            glVertex2f(centerX() - 10, centerY() - 5);
+            glEnd();
+
+            glBegin(GL_POINTS);
+            glColor3f(1.0, 1.0, 1.0);
+            glVertex2f(centerX(), centerY() - 5);
+            glEnd();
+
+            glBegin(GL_POINTS);
+            glColor3f(1.0, 1.0, 1.0);
+            glVertex2f(centerX() + 10, centerY() - 5);
+            glEnd();
+
+            glBegin(GL_POINTS);
+            glColor3f(1.0, 1.0, 1.0);
+            glVertex2f(centerX() + 20, centerY() - 5);
+            glEnd();
+
+            glColor3f(0.9, 0.5, 0.3);
+            drawCircle(x + width - 10, y + 10, 15);
+            glColor3f(0.9, 0.5, 0.3);
+            drawCircle(x - 10, y + 10, 15);
             glPopMatrix();
         }
     }
