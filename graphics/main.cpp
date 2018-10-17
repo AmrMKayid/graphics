@@ -125,6 +125,23 @@ class Bullet : public Object {
 public:
     Bullet(double xx, double xy, double xwidth, double xheight):Object(xx,xy,xwidth,xheight) {}
     Bullet(double xx, double xy):Object(xx,xy,1,1) {}
+
+    void draw() {
+        glPushMatrix();
+        glColor3f(1.0, 0.0, 0.0);
+        drawRect(x, y, width, height);
+        glColor3f(1.0, 1.0, 1.0);
+        drawCircle(centerX(), centerY(), 5);
+        
+        glPointSize(3.0);
+        glBegin(GL_POINTS);
+        glColor3f(0.0, 0.0, 0.0);
+        glVertex2f(centerX(), centerY());
+        glEnd();
+       
+
+        glPopMatrix();
+    }
 };
 
 class BulletNode{
