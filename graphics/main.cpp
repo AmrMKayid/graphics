@@ -9,8 +9,8 @@
 #include <GL/glu.h>
 #include <GL/gl.h>
 #endif
-// #include <SFML/Audio.hpp>
 #include <stdlib.h>
+#include <cstdlib>
 #include <stdio.h>
 #include <math.h>
 #include <string>
@@ -62,6 +62,7 @@ int* bezier(float t, int* p0,int* p1,int* p2,int* p3);
 void backgound();
 void draw_ship();
 void new_enemy();
+void enemy_drawing();
 
 string convertInt(int number);
 void rendertext(float x,float y, string strings);
@@ -207,9 +208,15 @@ public:
 
     void draw() {
         if(id == 1) {
+            glPushMatrix();
+            glColor3f(1.0, 1.0, 0.0);
             drawRect(x, y, width, height);
+            glPopMatrix();
         } else if(id == 2) {
+            glPushMatrix();
+            glColor3f(0.0, 1.0, 0.0);
             drawCircle(x, y, (width + height) / 2);
+            glPopMatrix();
         }
     }
 
@@ -322,16 +329,28 @@ public:
 
 class Enemy : public Object {
 public:
-    int health, bullet_timer;
+    int health, bullet_timer, type;
     
-    Enemy(double xx, double xy, double xwidth, double xheight, int health):Object(xx,xy,xwidth,xheight) {
+    Enemy(double xx, double xy, double xwidth, double xheight, int health, int type):Object(xx,xy,xwidth,xheight) {
         this->health = health;
         bullet_timer = 0;
+        this->type = type;
     }
 
     void draw() {
-        glColor3f(1.0, 0.0, 0.0);
-        drawRect(x, y, width, height);
+        if(type == 0) {
+            glPushMatrix();
+            glTranslatef(this->x, this->y, 0);
+            enemy_drawing();
+            glPopMatrix();
+        } else {
+            glPushMatrix();
+            glColor3f(0.3, 0.3, 0.3);
+            drawRect(x, y, width - 10, height - 10);
+            drawCircle(x + width - 10, y + 10, 20);
+            drawCircle(x - 10, y + 10, 20);
+            glPopMatrix();
+        }
     }
 
     Bullet* shoot(){
@@ -431,10 +450,10 @@ bool movement_reverse = false, restart = false, enemy_dead = false, isleveledUp 
 SpaceShip *ship = new SpaceShip(WINDOW_WIDTH / 2, 30, 70, 70);
 BulletObserver *ship_bullets = new BulletObserver();
 
-Enemy *enemy = new Enemy(WINDOW_WIDTH / 2, WINDOW_HEIGHT - 100, 50, 50, HEALTH(level));
+Enemy *enemy = new Enemy(WINDOW_WIDTH / 2, WINDOW_HEIGHT - 200, 100, 100, HEALTH(level), 0);
 BulletObserver *enemy_bullets = new BulletObserver();
 
-Enemy *enemy_defender = new Enemy(WINDOW_WIDTH, WINDOW_HEIGHT / 2, WINDOW_WIDTH / 10, 30, HEALTH(level));
+Enemy *enemy_defender = new Enemy(WINDOW_WIDTH, WINDOW_HEIGHT / 2, WINDOW_WIDTH / 10, 30, HEALTH(level), 1);
 
 int powerups_timer = 0;
 Powerups *pu1 = new Powerups(random(50, WINDOW_WIDTH), 0, 30, 30, 1);
@@ -571,6 +590,7 @@ void display() {
     glPushMatrix();
     glColor3f(1.0, 0.0, 0.0);
     double healthbar = ((enemy->health / ((double) HEALTH(level))));
+    healthbar = (healthbar <= 0)? 0 : healthbar;
     drawRect(WINDOW_WIDTH - 250, WINDOW_HEIGHT - 50, healthbar * (230), 30);
     glPopMatrix();
     
@@ -590,7 +610,8 @@ void display() {
     string scoreStr="Score: "+ convertInt(ship->score);
     rendertext(10, WINDOW_HEIGHT-20, scoreStr);
     
-    string healthStr="Health: "+ convertInt(enemy->health);
+    int enemy_health_str = (enemy->health <= 0)? 0 : enemy->health;
+    string healthStr="Health: "+ convertInt(enemy_health_str);
     rendertext(WINDOW_WIDTH - 170, WINDOW_HEIGHT-40, healthStr);
 
     if(enemy_dead) {
@@ -641,7 +662,7 @@ void Anim() {
 
     if(restart && gamestate != 1) {
         ship = new SpaceShip(WINDOW_WIDTH / 2, 30, 70, 70);
-        enemy = new Enemy(WINDOW_WIDTH / 2, WINDOW_HEIGHT - 100, 50, 50, HEALTH(1));
+        enemy = new Enemy(WINDOW_WIDTH / 2, WINDOW_HEIGHT - 200, 100, 100, HEALTH(1), 0);
         collider = new Collider(ship_bullets, enemy, enemy_defender);
         colliderShip = new ColliderShip(enemy_bullets, ship);
         restart = false;
@@ -821,7 +842,7 @@ void backgound() {
 
 
     glPushMatrix(); 
-    glColor3f(0.02, 0.02, 0.02);
+    glColor3f(0.03, 0.03, 0.03);
     drawRect(background_x, background_y2, WINDOW_WIDTH, WINDOW_HEIGHT);
 
     for(int i = 0; i < 10; ++i) {
@@ -857,7 +878,7 @@ void new_enemy() {
         enemy_dead = true;
         new_enemy_timer += 10;
         if(new_enemy_timer == 300) {
-            enemy = new Enemy(WINDOW_WIDTH / 2, WINDOW_HEIGHT - 100, 50, 50, HEALTH(level));
+            enemy = new Enemy(WINDOW_WIDTH / 2, WINDOW_HEIGHT - 200, 100, 100, HEALTH(level), 0);
             collider = new Collider(ship_bullets, enemy, enemy_defender);
             enemy_dead = false;
             isleveledUp = false;
@@ -869,6 +890,39 @@ void new_enemy() {
         level++;
         isleveledUp = true;
     }
+}
+
+void enemy_drawing() {
+    
+    glPushMatrix();
+    glColor3f(1.0f, 0.0f, 0.0f); 
+    drawRect(0, 0, 100, 100);
+    glPopMatrix();
+
+    glPushMatrix();
+    glColor3f(0.0f, 1.0f, 1.0f); 
+    drawCircle(50, 60, 7);
+    glPopMatrix();
+
+    glPushMatrix();
+    glColor3f(0.0f, 1.0f, 0.0f); 
+    drawRect(70, 70, 20, 20);
+    drawRect(10, 70, 20, 20);
+    glPopMatrix();
+
+    glPushMatrix();
+    glColor3f(1.0f, 1.0f, 0.0f); 
+    drawCircle(100, 100, 10);
+    drawCircle(0, 100, 10);
+    glPopMatrix();
+
+    glPushMatrix();
+    glBegin(GL_TRIANGLES);
+        glColor3f(1.0f, 1.0f, 1.0f);    glVertex3f(0.0f, 0.0f, 0.0f);
+        glColor3f(1.0f, 1.0f, 1.0f);    glVertex3f(100.0f, 0.0f, 0.0f);
+        glColor3f(1.0f, 1.0f, 1.0f);    glVertex3f(50.0f, 50.0f, 0.0f);
+    glEnd();
+    glPopMatrix();
 }
 
 int* bezier(float t, int* p0,int* p1,int* p2,int* p3) {
@@ -943,4 +997,8 @@ void rendertext(float x,float y, string strings) {
 
 int random(int n, int m) {
     return rand() % (m - n + 1) + n;
+}
+
+void playSound(string filename) {
+
 }
