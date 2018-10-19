@@ -1,5 +1,13 @@
 /* Libraries */
 
+#include <stdlib.h>
+#include <cstdlib>
+#include <stdio.h>
+#include <math.h>
+#include <string>
+#include <iostream>
+#include <sstream>
+
 #ifdef __APPLE__
 #include <GLUT/glut.h>
 #include <OpenGL/gl.h>
@@ -9,14 +17,6 @@
 #include <GL/glu.h>
 #include <GL/gl.h>
 #endif
-#include <stdlib.h>
-#include <cstdlib>
-#include <stdio.h>
-#include <math.h>
-#include <string>
-#include <iostream>
-#include <sstream>
-
 
 using namespace std;
 
@@ -29,7 +29,7 @@ using namespace std;
 #define STEP 30
 #define BULLET_SPEED 10
 #define SCORE_PLUS 10
-#define HEALTH(level) (level * 10)
+#define HEALTH(level) (level * 100)
 
 // -----------------------------------
 //          Methods Signatures
@@ -227,12 +227,12 @@ public:
         if(id == 1) {
             glPushMatrix();
             glColor3f(1.0, 1.0, 0.0);
-            drawRect(x, y, width, height);
+            drawCircle(x, y, (width + height) / 4);
             glPopMatrix();
         } else if(id == 2) {
             glPushMatrix();
             glColor3f(0.0, 1.0, 0.0);
-            drawCircle(x, y, (width + height) / 2);
+            drawRect(x, y, width, height);
             glPopMatrix();
         }
     }
@@ -672,8 +672,9 @@ void display() {
         }
         
         enemy_bullets->draw();
-        enemy_defender->draw();
     }
+
+    enemy_defender->draw();
 
     pu1->draw();
     pu2->draw();
@@ -706,8 +707,10 @@ void myTimer(int value) {
         ship_movement();
         ship_shooting();
         
-        enemy_movement();
-        enemy_shooting();
+        if(!enemy_dead) {
+            enemy_movement();
+            enemy_shooting();
+        }
         
         enemy_defender_appearance();
 
@@ -1114,8 +1117,4 @@ void rendertext(float x,float y, string strings) {
 
 int random(int n, int m) {
     return rand() % (m - n + 1) + n;
-}
-
-void playSound(string filename) {
-
 }
