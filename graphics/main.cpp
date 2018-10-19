@@ -643,8 +643,6 @@ void display() {
 
     backgound();
 
-    enemy_drawing();
-
     // healthbar
     glPushMatrix();
     glColor3f(1.0, 0.0, 0.0);
@@ -657,7 +655,22 @@ void display() {
     ship_bullets->draw();
 
     if(!enemy_dead) {
-        enemy->draw();
+        if(t > 0.5) {
+            glPushMatrix(); 
+            glTranslatef((ship->x + (ship->width / 2)), (ship->y + (ship->height / 2)), 1);
+            glRotatef(-ANGEL * t, 0, 0, 1);
+            glTranslatef(-(ship->x + (ship->width / 2)), -(ship->y + (ship->height / 2)), -1);
+            enemy->draw();
+            glPopMatrix();
+        } else {
+            glPushMatrix(); 
+            glTranslatef((ship->x + (ship->width / 2)), (ship->y + (ship->height / 2)), 1);
+            glRotatef(ANGEL * t, 0, 0, 1);
+            glTranslatef(-(ship->x + (ship->width / 2)), -(ship->y + (ship->height / 2)), -1);
+            enemy->draw();
+            glPopMatrix();
+        }
+        
         enemy_bullets->draw();
         enemy_defender->draw();
     }
