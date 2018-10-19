@@ -643,6 +643,8 @@ void display() {
 
     backgound();
 
+    enemy_drawing();
+
     // healthbar
     glPushMatrix();
     glColor3f(1.0, 0.0, 0.0);
@@ -955,34 +957,74 @@ void new_enemy() {
 }
 
 void enemy_drawing() {
-    
-    glPushMatrix();
-    glColor3f(1.0f, 0.0f, 0.0f); 
-    drawRect(0, 0, 100, 100);
-    glPopMatrix();
 
-    glPushMatrix();
-    glColor3f(0.0f, 1.0f, 1.0f); 
-    drawCircle(50, 60, 7);
-    glPopMatrix();
-
-    glPushMatrix();
-    glColor3f(0.0f, 1.0f, 0.0f); 
-    drawRect(70, 70, 20, 20);
-    drawRect(10, 70, 20, 20);
-    glPopMatrix();
-
+    // foot
     glPushMatrix();
     glColor3f(1.0f, 1.0f, 0.0f); 
-    drawCircle(100, 100, 10);
-    drawCircle(0, 100, 10);
+    drawRect(0, 0, 100, 10);
+    drawCircle(0, 5, 5);
+    drawCircle(100, 5, 5);
+
+    glColor3f(0.0f, 1.0f, 1.0f); 
+    drawCircle(10, 5, 5);
+    drawCircle(30, 5, 5);
+    drawCircle(50, 5, 5);
+    drawCircle(70, 5, 5);
+    drawCircle(90, 5, 5);
+
+    glPopMatrix();
+
+    // Body
+    glPushMatrix();
+    glColor3f(1.0f, 0.0f, 0.0f); 
+    drawRect(10, 10, 80, 70);
+
+    glColor3f(0.0f, 1.0f, 0.0f); 
+    drawCircle(22, 20, 7);
+    drawCircle(78, 20, 7);
+
+    glColor3f(0.0f, 0.0f, 0.0f);
+    drawCircle(23, 20, 3);
+    drawCircle(77, 20, 3);
+
+    glColor3f(0.0f, 0.7f, 0.5f);
+    drawRect(40, 15, 25, 10);
+
+    glColor3f(1.0f, 1.0f, 1.0f);
+    drawCircle(37, 35, 5);
+    drawCircle(52, 35, 5);
+    drawCircle(67, 35, 5);
+    glPopMatrix();
+
+    // Head
+    glPushMatrix();
+    glColor3f(1.0f, 1.0f, 1.0f); 
+    drawRect(20, 80, 60, 35);
+
+    glColor3f(0.0f, 0.0f, 0.0f);
+    drawCircle(30, 100, 7);
+    drawCircle(70, 100, 7);
+
     glPopMatrix();
 
     glPushMatrix();
+    glColor3f(1.0f, 0.0f, 0.0f);
+    drawRect(85, 60, 35, 10);
+    drawRect(115, 60, 10, 35);
+    glPopMatrix();
+
+    glPushMatrix();
+    glColor3f(1.0f, 0.0f, 0.0f);
+    drawRect(10, 60, -35, 10);
+    drawRect(-25, 60, 10, 35);
+    glPopMatrix();
+
+    glPushMatrix();
+    glColor3f(0.0f, 0.0f, 1.0f);
     glBegin(GL_TRIANGLES);
-        glColor3f(1.0f, 1.0f, 1.0f);    glVertex3f(0.0f, 0.0f, 0.0f);
-        glColor3f(1.0f, 1.0f, 1.0f);    glVertex3f(100.0f, 0.0f, 0.0f);
-        glColor3f(1.0f, 1.0f, 1.0f);    glVertex3f(50.0f, 50.0f, 0.0f);
+        glVertex3f(25.0f, 80.0f, 0.0f);
+        glVertex3f(80.0f, 80.0f, 0.0f);
+        glVertex3f(50.0f, 90.0f, 0.0f);
     glEnd();
     glPopMatrix();
 }
