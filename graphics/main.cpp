@@ -32,7 +32,7 @@ using namespace std;
 #define STEP 30
 #define BULLET_SPEED 10
 #define SCORE_PLUS 10
-#define HEALTH(level) (level * 10)
+#define HEALTH(level) (level * 100)
 
 // -----------------------------------
 //          Methods Signatures
