@@ -3,6 +3,7 @@
 #include <stdlib.h>
 #include <cstdlib>
 #include <stdio.h>
+#include <time.h>
 #include <math.h>
 #include <string>
 #include <iostream>
@@ -13,9 +14,11 @@
 #include <OpenGL/gl.h>
 #include <OpenGL/glu.h>
 #else
-#include <GL/glut.h>
+#include <glut.h>
 #include <GL/glu.h>
 #include <GL/gl.h>
+#include <windows.h>
+#include <mmsystem.h>
 #endif
 
 using namespace std;
@@ -29,7 +32,7 @@ using namespace std;
 #define STEP 30
 #define BULLET_SPEED 10
 #define SCORE_PLUS 10
-#define HEALTH(level) (level * 100)
+#define HEALTH(level) (level * 10)
 
 // -----------------------------------
 //          Methods Signatures
@@ -707,11 +710,9 @@ void myTimer(int value) {
         ship_movement();
         ship_shooting();
         
-        if(!enemy_dead) {
-            enemy_movement();
-            enemy_shooting();
-        }
-        
+        enemy_movement();
+        enemy_shooting();
+    
         enemy_defender_appearance();
 
         background_y = (background_y >= WINDOW_HEIGHT)? 0 : background_y + 10;
@@ -851,6 +852,10 @@ void ship_shooting() {
                 ship_bullets->addBullet(ship->shoot());
             }
         }
+
+        #ifdef _WIN32 
+        PlaySound(TEXT("ship_shoot.mp3"), NULL, SND_ASYNC | SND_FILENAME);
+        #endif
     }
     
     ship_bullets->update(BULLET_SPEED);
@@ -861,6 +866,10 @@ void enemy_shooting() {
     if (enemy->bullet_timer == 300) {
         enemy->bullet_timer = 0;
         enemy_bullets->addBullet(enemy->shoot());
+        
+        #ifdef _WIN32 
+        PlaySound(TEXT("enemy_shoot.wav"), NULL, SND_ASYNC | SND_FILENAME);
+        #endif
     }
     enemy_bullets->update(-BULLET_SPEED);
 }
@@ -897,9 +906,19 @@ void checkForPowerUps() {
     if(ship->collided(pu1->x, pu1->y)) {
         pu1->translateY(-1000);
         enemy->health /= 2;
+
+        #ifdef _WIN32 
+        PlaySound(TEXT("powerup.wav"), NULL, SND_ASYNC | SND_FILENAME);
+        #endif
+
     } else if(ship->collided(pu2->x, pu2->y)) {
         pu2->translateY(-1000);
         ship->score += 100;
+
+        #ifdef _WIN32 
+        PlaySound(TEXT("powerup2.mp3"), NULL, SND_ASYNC | SND_FILENAME);
+        #endif
+
     }
 }
 
@@ -969,6 +988,10 @@ void new_enemy() {
     if(enemy_dead && !isleveledUp) {
         level++;
         isleveledUp = true;
+
+        #ifdef _WIN32 
+        PlaySound(TEXT("levelup.mp3"), NULL, SND_ASYNC | SND_FILENAME);
+        #endif
     }
 }
 
