@@ -176,22 +176,6 @@ void Display() {
     setupLights();
 
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-
-//    glPushMatrix();
-//    glColor3f(1.0, 0.0, 0.0);
-//    glTranslated(0.4, 0.4, 0.6);
-//    glRotated(45, 0, 0, 1);
-//    glScaled(0.08, 0.08, 0.08);
-//    drawJack();
-//    glColor3f(0.5, 0.5, 0.5);
-//    glPopMatrix();
-//
-//
-//
-//    glPushMatrix();
-//    glTranslated(0.25, 0.42, 0.35);
-//    glutSolidSphere(0.1, 15, 15);
-//    glPopMatrix();
     
     drawSnowMan();
     
@@ -203,11 +187,35 @@ void Display() {
     glColor3f(0.5, 0.5, 0.5);
     glPopMatrix();
     
+    glPushMatrix();
+    glColor3f(1.0, 0.4, 0.9);
+    glTranslated(0.2, 0.0, 0.2);
+    glScaled(0.3, 0.3, 0.3);
+    glutSolidCube(1);
+    glColor3f(0.5, 0.5, 0.5);
+    glPopMatrix();
+    
+    glPushMatrix();
+    glColor3f(1.0, 0.6, 0.4);
+    glTranslated(0.1, 0.3, 0.2);
+    glScaled(0.05, 0.15, 0.4);
+    glutSolidCube(1);
+    glColor3f(0.5, 0.5, 0.5);
+    glPopMatrix();
+    
     // Mirror
     glPushMatrix();
     glColor3f(1.0, 0.4, 0.6);
-    glTranslated(0.2, 0.0, 0.7);
+    glTranslated(0.15, 0.0, 0.7);
     drawTable(0.3, 0.02, 0.03, 0.4);
+    glColor3f(0.5, 0.5, 0.5);
+    glPopMatrix();
+    
+    glPushMatrix();
+    glColor3f(0.6, 0.8, 0.4);
+    glTranslated(0.05, 0.70, 0.6);
+    glScaled(0.05, 0.5, 0.2);
+    glutSolidCube(1);
     glColor3f(0.5, 0.5, 0.5);
     glPopMatrix();
     
@@ -232,7 +240,7 @@ void Display() {
 // -----------------------------------
 
 void Keyboard(unsigned char key, int x, int y) {
-    float d = 0.3;
+    float d = 0.1;
 
     switch (key) {
     case 'w':
