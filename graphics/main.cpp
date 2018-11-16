@@ -1,14 +1,5 @@
 /* Libraries */
 
-// #include <stdlib.h>
-// #include <cstdlib>
-// #include <stdio.h>
-// #include <time.h>
-// #include <math.h>
-// #include <string>
-// #include <iostream>
-// #include <sstream>
-
 #include <math.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -28,9 +19,39 @@
 
 using namespace std;
 
+// -----------------------------------
+//              Constant
+// -----------------------------------
 
 #define GLUT_KEY_ESCAPE 27
 #define DEG2RAD(a) (a * 0.0174532925)
+
+
+// -----------------------------------
+//          Methods Signatures
+// -----------------------------------
+
+void Display();
+
+void Keyboard(unsigned char key, int x, int y);
+void Special(int key, int x, int y);
+
+void drawWall(double thickness);
+void drawTableLeg(double thick, double len);
+void drawJackPart();
+void drawJack();
+void drawTable(double topWid, double topThick, double legThick, double legLen);
+void drawSnowMan();
+
+void setupLights();
+void setupCamera();
+void roomsWalls();
+
+
+
+// -----------------------------------
+//              Classes
+// -----------------------------------
 
 class Vector3f {
 public:
@@ -119,7 +140,150 @@ public:
     }
 };
 
+// -----------------------------------
+//          Global Variables
+// -----------------------------------
+
 Camera camera;
+
+int main(int argc, char** argv) {
+    glutInit(&argc, argv);
+
+    glutInitWindowSize(640, 480);
+    glutInitWindowPosition(50, 50);
+
+    glutCreateWindow("Lab 5");
+    glutDisplayFunc(Display);
+    glutKeyboardFunc(Keyboard);
+    glutSpecialFunc(Special);
+
+    glutInitDisplayMode(GLUT_SINGLE | GLUT_RGB | GLUT_DEPTH);
+    glClearColor(1.0f, 1.0f, 1.0f, 0.0f);
+
+    glEnable(GL_DEPTH_TEST);
+    glEnable(GL_LIGHTING);
+    glEnable(GL_LIGHT0);
+    glEnable(GL_NORMALIZE);
+    glEnable(GL_COLOR_MATERIAL);
+
+    glShadeModel(GL_SMOOTH);
+
+    glutMainLoop();
+}
+
+void Display() {
+    setupCamera();
+    setupLights();
+
+    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+//    glPushMatrix();
+//    glColor3f(1.0, 0.0, 0.0);
+//    glTranslated(0.4, 0.4, 0.6);
+//    glRotated(45, 0, 0, 1);
+//    glScaled(0.08, 0.08, 0.08);
+//    drawJack();
+//    glColor3f(0.5, 0.5, 0.5);
+//    glPopMatrix();
+//
+//
+//
+//    glPushMatrix();
+//    glTranslated(0.25, 0.42, 0.35);
+//    glutSolidSphere(0.1, 15, 15);
+//    glPopMatrix();
+    
+    drawSnowMan();
+    
+    // Bed
+    glPushMatrix();
+    glColor3f(1.0, 0.4, 0.2);
+    glTranslated(0.2, 0.0, 0.2);
+    drawTable(0.4, 0.07, 0.05, 0.2);
+    glColor3f(0.5, 0.5, 0.5);
+    glPopMatrix();
+    
+    // Mirror
+    glPushMatrix();
+    glColor3f(1.0, 0.4, 0.6);
+    glTranslated(0.2, 0.0, 0.7);
+    drawTable(0.3, 0.02, 0.03, 0.4);
+    glColor3f(0.5, 0.5, 0.5);
+    glPopMatrix();
+    
+    glPushMatrix();
+    glColor3f(1.0, 1.0, 0.0);
+    glTranslated(0.24, 0.45, 0.6);
+    glScaled(0.5, 0.5, 0.5);
+    glRotated(30, 0, 1, 0);
+    glutSolidTeapot(0.08);
+    glColor3f(0.5, 0.5, 0.5);
+    glPopMatrix();
+    
+    // Rooms walls
+    roomsWalls();
+    
+
+    glFlush();
+}
+
+// -----------------------------------
+//          Keyboard Methods
+// -----------------------------------
+
+void Keyboard(unsigned char key, int x, int y) {
+    float d = 0.3;
+
+    switch (key) {
+    case 'w':
+        camera.moveY(d);
+        break;
+    case 's':
+        camera.moveY(-d);
+        break;
+    case 'a':
+        camera.moveX(d);
+        break;
+    case 'd':
+        camera.moveX(-d);
+        break;
+    case 'q':
+        camera.moveZ(d);
+        break;
+    case 'e':
+        camera.moveZ(-d);
+        break;
+
+    case GLUT_KEY_ESCAPE:
+        exit(EXIT_SUCCESS);
+    }
+
+    glutPostRedisplay();
+}
+void Special(int key, int x, int y) {
+    float a = 5.0;
+
+    switch (key) {
+    case GLUT_KEY_UP:
+        camera.rotateX(a);
+        break;
+    case GLUT_KEY_DOWN:
+        camera.rotateX(-a);
+        break;
+    case GLUT_KEY_LEFT:
+        camera.rotateY(a);
+        break;
+    case GLUT_KEY_RIGHT:
+        camera.rotateY(-a);
+        break;
+    }
+
+    glutPostRedisplay();
+}
+
+// -----------------------------------
+//          Drawing Methods
+// -----------------------------------
 
 void drawWall(double thickness) {
     glPushMatrix();
@@ -176,6 +340,44 @@ void drawTable(double topWid, double topThick, double legThick, double legLen){
     glPopMatrix();
 }
 
+void drawSnowMan() {
+    glPushMatrix();
+    
+    glScaled(0.1, 0.1, 0.1);
+    glTranslated(0.7, 3, 0.7);
+    glColor3f(1.0f, 1.0f, 1.0f);
+    
+    // Draw Body
+    glTranslatef(0.0f ,0.75f, 0.0f);
+    glutSolidSphere(0.75f,20,20);
+    
+    // Draw Head
+    glTranslatef(0.0f, 1.0f, 0.0f);
+    glutSolidSphere(0.25f,20,20);
+    
+    // Draw Eyes
+    glPushMatrix();
+    glColor3f(0.0f,0.0f,0.0f);
+    glTranslatef(0.05f, 0.10f, 0.18f);
+    glutSolidSphere(0.05f,10,10);
+    glTranslatef(-0.1f, 0.0f, 0.0f);
+    glutSolidSphere(0.05f,10,10);
+    glPopMatrix();
+    
+    // Draw Nose
+    glColor3f(1.0f, 0.5f , 0.5f);
+    glutSolidCone(0.08f,0.5f,10,2);
+    
+    glPopMatrix();
+}
+
+
+
+// -----------------------------------
+//          Helper Methods
+// -----------------------------------
+
+
 void setupLights() {
     GLfloat ambient[] = { 0.7f, 0.7f, 0.7, 1.0f };
     GLfloat diffuse[] = { 0.6f, 0.6f, 0.6, 1.0f };
@@ -201,115 +403,31 @@ void setupCamera() {
     camera.look();
 }
 
-void Display() {
-    setupCamera();
-    setupLights();
-
-    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-
-    glPushMatrix();
-    glTranslated(0.4, 0.4, 0.6);
-    glRotated(45, 0, 0, 1);
-    glScaled(0.08, 0.08, 0.08);
-    drawJack();
-    glPopMatrix();
-    glPushMatrix();
-    glTranslated(0.6, 0.38, 0.5);
-    glRotated(30, 0, 1, 0);
-    glutSolidTeapot(0.08);
-    glPopMatrix();
-    glPushMatrix();
-    glTranslated(0.25, 0.42, 0.35);
-    glutSolidSphere(0.1, 15, 15);
-    glPopMatrix();
-    glPushMatrix();
-    glTranslated(0.4, 0.0, 0.4);
-    drawTable(0.6, 0.02, 0.02, 0.3);
-    glPopMatrix();
+void roomsWalls() {
     drawWall(0.02);
+
     glPushMatrix();
     glRotated(90, 0, 0, 1.0);
     drawWall(0.02);
     glPopMatrix();
+
     glPushMatrix();
+    glColor3f(1, 0.6, 0.5);
     glRotated(-90, 1.0, 0.0, 0.0);
     drawWall(0.02);
+    glColor3f(0.5, 0.5, 0.5);
     glPopMatrix();
 
-    glFlush();
-}
-
-void Keyboard(unsigned char key, int x, int y) {
-    float d = 0.01;
-
-    switch (key) {
-    case 'w':
-        camera.moveY(d);
-        break;
-    case 's':
-        camera.moveY(-d);
-        break;
-    case 'a':
-        camera.moveX(d);
-        break;
-    case 'd':
-        camera.moveX(-d);
-        break;
-    case 'q':
-        camera.moveZ(d);
-        break;
-    case 'e':
-        camera.moveZ(-d);
-        break;
-
-    case GLUT_KEY_ESCAPE:
-        exit(EXIT_SUCCESS);
-    }
-
-    glutPostRedisplay();
-}
-void Special(int key, int x, int y) {
-    float a = 1.0;
-
-    switch (key) {
-    case GLUT_KEY_UP:
-        camera.rotateX(a);
-        break;
-    case GLUT_KEY_DOWN:
-        camera.rotateX(-a);
-        break;
-    case GLUT_KEY_LEFT:
-        camera.rotateY(a);
-        break;
-    case GLUT_KEY_RIGHT:
-        camera.rotateY(-a);
-        break;
-    }
-
-    glutPostRedisplay();
-}
-
-int main(int argc, char** argv) {
-    glutInit(&argc, argv);
-
-    glutInitWindowSize(640, 480);
-    glutInitWindowPosition(50, 50);
-
-    glutCreateWindow("Lab 5");
-    glutDisplayFunc(Display);
-    glutKeyboardFunc(Keyboard);
-    glutSpecialFunc(Special);
-
-    glutInitDisplayMode(GLUT_SINGLE | GLUT_RGB | GLUT_DEPTH);
-    glClearColor(1.0f, 1.0f, 1.0f, 0.0f);
-
-    glEnable(GL_DEPTH_TEST);
-    glEnable(GL_LIGHTING);
-    glEnable(GL_LIGHT0);
-    glEnable(GL_NORMALIZE);
-    glEnable(GL_COLOR_MATERIAL);
-
-    glShadeModel(GL_SMOOTH);
-
-    glutMainLoop();
+    glPushMatrix();
+    glRotated(180, 1, 0, 0.0);
+    drawWall(0.02);
+    glPopMatrix();
+    
+    glPushMatrix();
+    glRotated(90, 0, 0, 1.0);
+    glPushMatrix();
+    glRotated(180, 1, 0, 0.0);
+    drawWall(0.02);
+    glPopMatrix();
+    glPopMatrix();
 }
