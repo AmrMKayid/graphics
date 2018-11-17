@@ -25,6 +25,8 @@ using namespace std;
 
 #define GLUT_KEY_ESCAPE 27
 #define DEG2RAD(a) (a * 0.0174532925)
+#define WINDOW_WIDTH 1700
+#define WINDOW_HEIGHT 1000
 
 
 // -----------------------------------
@@ -43,8 +45,14 @@ void drawJack();
 void drawTable(double topWid, double topThick, double legThick, double legLen);
 void drawSnowMan();
 
+void bed();
+void mirror();
+void closet();
+
 void setupLights();
 void setupCamera();
+void topCam();
+void defaultCam();
 void roomsWalls();
 
 
@@ -149,10 +157,10 @@ Camera camera;
 int main(int argc, char** argv) {
     glutInit(&argc, argv);
 
-    glutInitWindowSize(640, 480);
-    glutInitWindowPosition(50, 50);
+    glutInitWindowSize(WINDOW_WIDTH, WINDOW_HEIGHT);
+    glutInitWindowPosition(0, 0);
 
-    glutCreateWindow("Lab 5");
+    glutCreateWindow("Assignment 2");
     glutDisplayFunc(Display);
     glutKeyboardFunc(Keyboard);
     glutSpecialFunc(Special);
@@ -179,59 +187,17 @@ void Display() {
     
     drawSnowMan();
     
-    // Bed
-    glPushMatrix();
-    glColor3f(1.0, 0.4, 0.2);
-    glTranslated(0.2, 0.0, 0.2);
-    drawTable(0.4, 0.07, 0.05, 0.2);
-    glColor3f(0.5, 0.5, 0.5);
-    glPopMatrix();
+    // LEFT Room (Bed Room)
+    bed();
+    mirror();
+    closet();
     
-    glPushMatrix();
-    glColor3f(1.0, 0.4, 0.9);
-    glTranslated(0.2, 0.0, 0.2);
-    glScaled(0.3, 0.3, 0.3);
-    glutSolidCube(1);
-    glColor3f(0.5, 0.5, 0.5);
-    glPopMatrix();
-    
-    glPushMatrix();
-    glColor3f(1.0, 0.6, 0.4);
-    glTranslated(0.1, 0.3, 0.2);
-    glScaled(0.05, 0.15, 0.4);
-    glutSolidCube(1);
-    glColor3f(0.5, 0.5, 0.5);
-    glPopMatrix();
-    
-    // Mirror
-    glPushMatrix();
-    glColor3f(1.0, 0.4, 0.6);
-    glTranslated(0.15, 0.0, 0.7);
-    drawTable(0.3, 0.02, 0.03, 0.4);
-    glColor3f(0.5, 0.5, 0.5);
-    glPopMatrix();
-    
-    glPushMatrix();
-    glColor3f(0.6, 0.8, 0.4);
-    glTranslated(0.05, 0.70, 0.6);
-    glScaled(0.05, 0.5, 0.2);
-    glutSolidCube(1);
-    glColor3f(0.5, 0.5, 0.5);
-    glPopMatrix();
-    
-    glPushMatrix();
-    glColor3f(1.0, 1.0, 0.0);
-    glTranslated(0.24, 0.45, 0.6);
-    glScaled(0.5, 0.5, 0.5);
-    glRotated(30, 0, 1, 0);
-    glutSolidTeapot(0.08);
-    glColor3f(0.5, 0.5, 0.5);
-    glPopMatrix();
     
     // Rooms walls
     roomsWalls();
-    
 
+//    printf("EyeX: %f, EyeY: %f, EyeZ: %f | cX: %f, cY: %f, cZ: %f | uX: %f, uY: %f, uZ: %f \n\n", camera.eye.x, camera.eye.y, camera.eye.z, camera.center.x, camera.center.y, camera.center.z, camera.up.x, camera.up.y, camera.up.z );
+    
     glFlush();
 }
 
@@ -261,6 +227,12 @@ void Keyboard(unsigned char key, int x, int y) {
     case 'e':
         camera.moveZ(-d);
         break;
+    case 't':
+            topCam();
+            break;
+    case 'r':
+            defaultCam();
+            break;
 
     case GLUT_KEY_ESCAPE:
         exit(EXIT_SUCCESS);
@@ -268,6 +240,7 @@ void Keyboard(unsigned char key, int x, int y) {
 
     glutPostRedisplay();
 }
+
 void Special(int key, int x, int y) {
     float a = 5.0;
 
@@ -380,6 +353,100 @@ void drawSnowMan() {
 }
 
 
+void bed() {
+    glPushMatrix();
+    glColor3f(1.0, 0.4, 0.2);
+    glTranslated(0.2, 0.0, 0.2);
+    drawTable(0.4, 0.07, 0.05, 0.2);
+    glColor3f(0.5, 0.5, 0.5);
+    glPopMatrix();
+    
+    glPushMatrix();
+    glColor3f(1.0, 0.4, 0.9);
+    glTranslated(0.2, 0.0, 0.2);
+    glScaled(0.3, 0.3, 0.3);
+    glutSolidCube(1);
+    glColor3f(0.5, 0.5, 0.5);
+    glPopMatrix();
+    
+    glPushMatrix();
+    glColor3f(1.0, 0.6, 0.4);
+    glTranslated(0.01, 0.3, 0.2);
+    glScaled(0.05, 0.15, 0.4);
+    glutSolidCube(1);
+    glColor3f(0.5, 0.5, 0.5);
+    glPopMatrix();
+}
+
+void mirror() {
+    glPushMatrix();
+    glColor3f(1.0, 0.4, 0.6);
+    glTranslated(0.15, 0.0, 0.7);
+    drawTable(0.3, 0.02, 0.03, 0.4);
+    glColor3f(0.5, 0.5, 0.5);
+    glPopMatrix();
+    
+    glPushMatrix();
+    glColor3f(0.6, 0.8, 0.4);
+    glTranslated(0.01, 0.65, 0.7);
+    glScaled(0.05, 0.5, 0.3);
+    glutSolidCube(1);
+    glColor3f(0.5, 0.5, 0.5);
+    glPopMatrix();
+    
+    glPushMatrix();
+    glColor3f(0.2, 0.6, 0.7);
+    glTranslated(0.04, 0.67, 0.71);
+    glScaled(0.01, 0.4, 0.2);
+    glutSolidCube(1);
+    glColor3f(0.5, 0.5, 0.5);
+    glPopMatrix();
+    
+    glPushMatrix();
+    glColor3f(1.0, 1.0, 0.0);
+    glTranslated(0.24, 0.45, 0.6);
+    glScaled(0.5, 0.5, 0.5);
+    glRotated(30, 0, 1, 0);
+    glutSolidTeapot(0.08);
+    glColor3f(0.5, 0.5, 0.5);
+    glPopMatrix();
+}
+
+void closet() {
+    glPushMatrix();
+    glColor3f(0.5, 0.9, 0.4);
+    glTranslated(0.73, 0.35, 0.1);
+    glScaled(0.45, 0.75, 0.2);
+    glutSolidCube(1);
+    glColor3f(0.5, 0.5, 0.5);
+    glPopMatrix();
+    
+    glPushMatrix();
+    glColor3f(0.7, 0.2, 0.4);
+    glTranslated(0.85, 0.13, 0.17);
+    glScaled(0.15, 0.1, 0.1);
+    glutSolidCube(1);
+    glColor3f(0.5, 0.5, 0.5);
+    glPopMatrix();
+    
+    
+    glPushMatrix();
+    glColor3f(0.7, 0.2, 0.4);
+    glTranslated(0.65, 0.13, 0.17);
+    glScaled(0.15, 0.1, 0.1);
+    glutSolidCube(1);
+    glColor3f(0.5, 0.5, 0.5);
+    glPopMatrix();
+    
+    
+    glPushMatrix();
+    glColor3f(0.9, 0.6, 0.4);
+    glTranslated(0.75, 0.45, 0.17);
+    glScaled(0.35, 0.45, 0.1);
+    glutSolidCube(1);
+    glColor3f(0.5, 0.5, 0.5);
+    glPopMatrix();
+}
 
 // -----------------------------------
 //          Helper Methods
@@ -401,14 +468,44 @@ void setupLights() {
     glLightfv(GL_LIGHT0, GL_POSITION, lightIntensity);
     glLightfv(GL_LIGHT0, GL_DIFFUSE, lightIntensity);
 }
+
 void setupCamera() {
     glMatrixMode(GL_PROJECTION);
     glLoadIdentity();
-    gluPerspective(60, 640 / 480, 0.001, 100);
+    gluPerspective(60, WINDOW_WIDTH / WINDOW_HEIGHT, 0.001, 100);
 
     glMatrixMode(GL_MODELVIEW);
     glLoadIdentity();
+    
     camera.look();
+}
+
+void topCam() {
+    camera.eye.x = 0.572740;
+    camera.eye.y = 2.717326;
+    camera.eye.z = 0.0;
+    
+    camera.center.x = 0.501404;
+    camera.center.x = 1.719873;
+    camera.center.x = 0.0;
+    
+    camera.up.x = -0.997452;
+    camera.up.x = 0.071336;
+    camera.up.x = 0.0;
+}
+
+void defaultCam() {
+    camera.eye.x = 2.502736;
+    camera.eye.y = 0.645169;
+    camera.eye.z = 0.032397;
+    
+    camera.center.x = 1.526539;
+    camera.center.x = 0.432568;
+    camera.center.x = -0.010505;
+    
+    camera.up.x = -0.212396;
+    camera.up.x =  0.977139;
+    camera.up.x = -0.009335;
 }
 
 void roomsWalls() {
