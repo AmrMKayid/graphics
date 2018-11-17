@@ -64,7 +64,7 @@ void defaultCam();
 void rightCam();
 void leftCam();
 void roomsWalls();
-
+int random(int n, int m);
 
 
 // -----------------------------------
@@ -195,7 +195,10 @@ void Display() {
 
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     
+    glPushMatrix();
+    glTranslated(random(0, 7) / 10.0, random(0, 5) / 10.0, random(-7, 7) / 10.0);
     drawSnowMan();
+    glPopMatrix();
     
     // RIGHT Room (Living Room)
     sofa();
@@ -348,6 +351,8 @@ void drawTable(double topWid, double topThick, double legThick, double legLen){
 void drawSnowMan() {
     glPushMatrix();
     
+    glRotated(45, 0, 1, 0);
+    
     glScaled(0.1, 0.1, 0.1);
     glTranslated(0.7, 3, 0.7);
     glColor3f(1.0f, 1.0f, 1.0f);
@@ -482,8 +487,8 @@ void bed() {
     
     glPushMatrix();
     glColor3f(1.0, 0.4, 0.9);
-    glTranslated(0.2, 0.0, 0.2);
-    glScaled(0.3, 0.3, 0.3);
+    glTranslated(0.2, 0.1, 0.2);
+    glScaled(0.3, 0.1, 0.3);
     glutSolidCube(1);
     glColor3f(0.5, 0.5, 0.5);
     glPopMatrix();
@@ -562,7 +567,8 @@ void chair() {
     glPushMatrix();
     glColor3f(0.9, 0.1, 0.2);
     glTranslated(0.65, 0.01, 0.5);
-    drawTable(0.1, 0.03, 0.01, 0.1);
+    glRotated(45, 0, 1, 0);
+    drawTable(0.2, 0.03, 0.01, 0.1);
     glColor3f(0.5, 0.5, 0.5);
     glPopMatrix();
 }
@@ -697,4 +703,9 @@ void roomsWalls() {
     drawWall(0.02);
     glPopMatrix();
     glPopMatrix();
+}
+
+
+int random(int n, int m) {
+    return rand() % (m - n + 1) + n;
 }
