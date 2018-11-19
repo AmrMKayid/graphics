@@ -34,6 +34,7 @@ using namespace std;
 // -----------------------------------
 
 void Display();
+void myTimer(int value);
 
 void Keyboard(unsigned char key, int x, int y);
 void Special(int key, int x, int y);
@@ -164,6 +165,7 @@ public:
 
 Camera camera;
 bool horror = false;
+double r_value = 0.0, g_value = 0.0, b_value = 0.0, scale_factor = 0.0;
 
 int main(int argc, char** argv) {
     glutInit(&argc, argv);
@@ -176,6 +178,8 @@ int main(int argc, char** argv) {
     glutIdleFunc(Display);
     glutKeyboardFunc(Keyboard);
     glutSpecialFunc(Special);
+    glutTimerFunc(0, myTimer, 0);
+
 
     glutInitDisplayMode(GLUT_SINGLE | GLUT_RGB | GLUT_DEPTH);
     glClearColor(1.0f, 1.0f, 1.0f, 0.0f);
@@ -235,6 +239,20 @@ void Display() {
     glFlush();
 }
 
+void myTimer(int value) {
+    
+    if(horror) {
+        r_value = (r_value > 1.0)? 0.0 : r_value + 0.05;
+        g_value = (g_value > 1.0)? 0.0 : g_value + 0.05;
+        b_value = (b_value > 1.0)? 0.0 : b_value + 0.05;
+        scale_factor = (scale_factor > 5.0)? 0.0 : scale_factor + random(-20, 20) / 100.0;
+    } else {
+        r_value = g_value = b_value = scale_factor = 0.0;
+    }
+    
+    glutTimerFunc(0, myTimer, 0);
+    glutPostRedisplay();
+}
 // -----------------------------------
 //          Keyboard Methods
 // -----------------------------------
@@ -407,33 +425,33 @@ void drawSnowMan() {
 
 void sofa() {
     glPushMatrix();
-    glColor3f(1.0, 0.6, 0.9);
+    glColor3f(1.0 - r_value, 0.6 - g_value, 0.9 - b_value);
     glTranslated(0.1, 0.1, -0.7);
-    glScaled(0.2, 0.2, 0.3);
+    glScaled(0.2, 0.2 + scale_factor, 0.3);
     glutSolidCube(1);
     glColor3f(0.5, 0.5, 0.5);
     glPopMatrix();
     
     glPushMatrix();
-    glColor3f(0.95, 0.62, 0.85);
+    glColor3f(0.95 - r_value, 0.62 - g_value, 0.85 - b_value);
     glTranslated(0.05, 0.25, -0.7);
-    glScaled(0.05, 0.2, 0.27);
+    glScaled(0.05, 0.2 + scale_factor, 0.27);
     glutSolidCube(1);
     glColor3f(0.5, 0.5, 0.5);
     glPopMatrix();
     
     glPushMatrix();
-    glColor3f(0.9, 0.67, 0.8);
+    glColor3f(0.9 - r_value, 0.67 - g_value, 0.8 - b_value);
     glTranslated(0.05, 0.2, -0.835);
-    glScaled(0.3, 0.2, 0.02);
+    glScaled(0.3, 0.2 + scale_factor, 0.02);
     glutSolidCube(1);
     glColor3f(0.5, 0.5, 0.5);
     glPopMatrix();
     
     glPushMatrix();
-    glColor3f(0.9, 0.67, 0.8);
+    glColor3f(0.9 - r_value, 0.67 - g_value, 0.8 - b_value);
     glTranslated(0.05, 0.2, -0.56);
-    glScaled(0.3, 0.2, 0.02);
+    glScaled(0.3, 0.2 + scale_factor, 0.02);
     glutSolidCube(1);
     glColor3f(0.5, 0.5, 0.5);
     glPopMatrix();
@@ -445,9 +463,9 @@ void beanbag() {
     glTranslated(0.1, -0.5, -0.3);
     
     glPushMatrix();
-    glScaled(0.15, 0.15, 0.15);
+    glScaled(0.15, 0.15 + 0.01*scale_factor, 0.15);
     glTranslated(0.7, 3, 0.7);
-    glColor3f(1.0f, 1.0f, 1.0f);
+    glColor3f(1.0f - r_value, 1.0f - g_value, 1.0f - b_value);
     
     glTranslatef(0.0f ,0.75f, 0.0f);
     glutSolidSphere(0.75f,20,20);
@@ -458,17 +476,17 @@ void beanbag() {
 
 void tv() {
     glPushMatrix();
-    glColor3f(0.5, 0.5, 0.5);
+    glColor3f(0.5 - r_value, 0.5 - g_value, 0.5 - b_value);
     glTranslated(0.57, 0.7, -0.02);
-    glScaled(0.7, 0.5, 0.01);
+    glScaled(0.7, 0.5 + scale_factor, 0.01);
     glutSolidCube(1);
     glColor3f(0.5, 0.5, 0.5);
     glPopMatrix();
     
     glPushMatrix();
-    glColor3f(0.9, 0.9, 0.9);
+    glColor3f(0.9 - r_value, 0.9 - g_value, 0.9 - b_value);
     glTranslated(0.57, 0.7, -0.023);
-    glScaled(0.65, 0.45, 0.01);
+    glScaled(0.65, 0.45 + scale_factor, 0.01);
     glutSolidCube(1);
     glColor3f(0.5, 0.5, 0.5);
     glPopMatrix();
@@ -476,17 +494,18 @@ void tv() {
 
 void table() {
     glPushMatrix();
-    glColor3f(1.0, 0.0, 0.0);
+    glScaled(1.0, 1.0 + scale_factor, 1.0);
+    glColor3f(1.0 - r_value, 0.0 + g_value, 0.0 + b_value);
     glTranslated(0.7, 0.02, -0.5);
     drawTable(0.3, 0.03, 0.01, 0.2);
     glColor3f(0.5, 0.5, 0.5);
     glPopMatrix();
     
     glPushMatrix();
-    glColor3f(1.0, 1.0, 0.0);
+    glColor3f(1.0 - r_value, 1.0 - g_value, 0.0 + b_value);
     glTranslated(0.7, 0.3, -0.5);
     glRotated(45, 1, 0, 0);
-    glScaled(0.05, 0.05, 0.05);
+    glScaled(0.05, 0.05 + scale_factor, 0.05);
     drawJack();
     glColor3f(0.5, 0.5, 0.5);
     glPopMatrix();
@@ -498,24 +517,25 @@ void table() {
 
 void bed() {
     glPushMatrix();
-    glColor3f(1.0, 0.4, 0.2);
+    glScaled(1.0, 1.0 + scale_factor, 1.0);
+    glColor3f(1.0 - r_value, 0.4 - g_value, 0.2 - b_value);
     glTranslated(0.2, 0.0, 0.2);
     drawTable(0.4, 0.07, 0.05, 0.2);
     glColor3f(0.5, 0.5, 0.5);
     glPopMatrix();
     
     glPushMatrix();
-    glColor3f(1.0, 0.4, 0.9);
+    glColor3f(1.0 - r_value, 0.4 - g_value, 0.9 - b_value);
     glTranslated(0.2, 0.1, 0.2);
-    glScaled(0.3, 0.1, 0.3);
+    glScaled(0.3, 0.1 + scale_factor, 0.3);
     glutSolidCube(1);
     glColor3f(0.5, 0.5, 0.5);
     glPopMatrix();
     
     glPushMatrix();
-    glColor3f(1.0, 0.6, 0.4);
+    glColor3f(1.0 - r_value, 0.6 - g_value, 0.4 - b_value);
     glTranslated(0.01, 0.3, 0.2);
-    glScaled(0.05, 0.15, 0.4);
+    glScaled(0.05, 0.15 + scale_factor, 0.4);
     glutSolidCube(1);
     glColor3f(0.5, 0.5, 0.5);
     glPopMatrix();
@@ -523,24 +543,25 @@ void bed() {
 
 void mirror() {
     glPushMatrix();
-    glColor3f(1.0, 0.4, 0.6);
+    glScaled(1.0, 1.0 + scale_factor, 1.0);
+    glColor3f(1.0 - r_value, 0.4 - g_value, 0.6 - b_value);
     glTranslated(0.15, 0.0, 0.7);
     drawTable(0.3, 0.02, 0.03, 0.4);
     glColor3f(0.5, 0.5, 0.5);
     glPopMatrix();
     
     glPushMatrix();
-    glColor3f(0.6, 0.8, 0.4);
+    glColor3f(0.6 - r_value, 0.8 - g_value, 0.4 - b_value);
     glTranslated(0.01, 0.65, 0.7);
-    glScaled(0.05, 0.5, 0.3);
+    glScaled(0.05, 0.5 + scale_factor, 0.3);
     glutSolidCube(1);
     glColor3f(0.5, 0.5, 0.5);
     glPopMatrix();
     
     glPushMatrix();
-    glColor3f(0.2, 0.6, 0.7);
+    glColor3f(0.2, 0.6 - g_value, 0.7 - b_value);
     glTranslated(0.04, 0.67, 0.71);
-    glScaled(0.01, 0.4, 0.2);
+    glScaled(0.01, 0.4 + scale_factor, 0.2);
     glutSolidCube(1);
     glColor3f(0.5, 0.5, 0.5);
     glPopMatrix();
@@ -548,35 +569,35 @@ void mirror() {
 
 void closet() {
     glPushMatrix();
-    glColor3f(0.5, 0.9, 0.4);
+    glColor3f(0.5 - r_value, 0.9 - g_value, 0.4 - b_value);
     glTranslated(0.73, 0.35, 0.1);
-    glScaled(0.45, 0.75, 0.2);
+    glScaled(0.45, 0.75 + scale_factor, 0.2);
     glutSolidCube(1);
     glColor3f(0.5, 0.5, 0.5);
     glPopMatrix();
     
     glPushMatrix();
-    glColor3f(0.7, 0.2, 0.4);
+    glColor3f(0.7 - r_value, 0.2 - g_value, 0.4 - b_value);
     glTranslated(0.85, 0.13, 0.17);
-    glScaled(0.15, 0.1, 0.1);
+    glScaled(0.15, 0.1 + scale_factor, 0.1);
     glutSolidCube(1);
     glColor3f(0.5, 0.5, 0.5);
     glPopMatrix();
     
     
     glPushMatrix();
-    glColor3f(0.7, 0.2, 0.4);
+    glColor3f(0.7 - r_value, 0.2 - g_value, 0.4 - b_value);
     glTranslated(0.65, 0.13, 0.17);
-    glScaled(0.15, 0.1, 0.1);
+    glScaled(0.15, 0.1 + scale_factor, 0.1);
     glutSolidCube(1);
     glColor3f(0.5, 0.5, 0.5);
     glPopMatrix();
     
     
     glPushMatrix();
-    glColor3f(0.9, 0.6, 0.4);
+    glColor3f(0.9 - r_value, 0.6 - g_value, 0.4 - b_value);
     glTranslated(0.75, 0.45, 0.17);
-    glScaled(0.35, 0.45, 0.1);
+    glScaled(0.35, 0.45 + scale_factor, 0.1);
     glutSolidCube(1);
     glColor3f(0.5, 0.5, 0.5);
     glPopMatrix();
@@ -584,7 +605,8 @@ void closet() {
 
 void chair() {
     glPushMatrix();
-    glColor3f(0.9, 0.1, 0.2);
+    glScaled(1.0, 1.0 + scale_factor, 1.0);
+    glColor3f(0.9 - r_value, 0.1 - g_value, 0.2 - b_value);
     glTranslated(0.65, 0.01, 0.5);
     glRotated(45, 0, 1, 0);
     drawTable(0.2, 0.03, 0.01, 0.1);
@@ -594,9 +616,9 @@ void chair() {
 
 void teapot() {
     glPushMatrix();
-    glColor3f(1.0, 1.0, 0.0);
+    glColor3f(1.0 - r_value, 1.0 - g_value, 0.0 - b_value);
     glTranslated(0.24, 0.45, 0.6);
-    glScaled(0.5, 0.5, 0.5);
+    glScaled(0.5, 0.5 + scale_factor, 0.5);
     glRotated(30, 0, 1, 0);
     glutSolidTeapot(0.08);
     glColor3f(0.5, 0.5, 0.5);
