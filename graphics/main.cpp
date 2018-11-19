@@ -163,6 +163,7 @@ public:
 // -----------------------------------
 
 Camera camera;
+bool horror = false;
 
 int main(int argc, char** argv) {
     glutInit(&argc, argv);
@@ -172,6 +173,7 @@ int main(int argc, char** argv) {
 
     glutCreateWindow("Assignment 2");
     glutDisplayFunc(Display);
+    glutIdleFunc(Display);
     glutKeyboardFunc(Keyboard);
     glutSpecialFunc(Special);
 
@@ -195,10 +197,21 @@ void Display() {
 
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     
-    glPushMatrix();
-    glTranslated(random(0, 7) / 10.0, random(0, 5) / 10.0, random(-7, 7) / 10.0);
-    drawSnowMan();
-    glPopMatrix();
+    if(horror) {
+        for(int i = 0; i < 10e7; i++);
+        glPushMatrix();
+        glTranslated(random(0, 7) / 10.0, random(0, 5) / 10.0, random(-7, 7) / 10.0);
+        glRotated(random(0, 180), 0, 1, 0);
+        drawSnowMan();
+        glPopMatrix();
+        
+//        for(int i = 0; i < 10e7; i++);
+    } else {
+        glPushMatrix();
+        glScaled(0.001, 0.001, 0.001);
+        drawSnowMan();
+        glPopMatrix();
+    }
     
     // RIGHT Room (Living Room)
     sofa();
@@ -259,6 +272,12 @@ void Keyboard(unsigned char key, int x, int y) {
             break;
     case '2':
             leftCam();
+            break;
+    case 'h':
+            horror = true;
+            break;
+    case 'p':
+            horror = false;
             break;
 
     case GLUT_KEY_ESCAPE:
@@ -604,7 +623,7 @@ void setupLights() {
     glLightfv(GL_LIGHT0, GL_POSITION, lightIntensity);
     glLightfv(GL_LIGHT0, GL_DIFFUSE, lightIntensity);
     
-//    GLfloat lightIntensity2[] = { 0.5f, 0.5f, 0.5f, 1.0f };
+//    GLfloat lightIntensity2[] = { -0.7f, -0.7f, -1, -1.0f };
 //    glLightfv(GL_LIGHT1, GL_POSITION, lightIntensity2);
 //    glLightfv(GL_LIGHT1, GL_DIFFUSE, lightIntensity2);
 }
