@@ -222,6 +222,13 @@ void Display() {
     beanbag();
     tv();
     table();
+
+    // glPushMatrix();
+    // glTranslated(0.7, 0, 0);
+    // glRotated(180, 0, 1, 0);
+    // glColor3f(1, 0, 0);
+    // sofa();
+    // glPopMatrix();
     
     // LEFT Room (Bed Room)
     bed();
@@ -229,7 +236,6 @@ void Display() {
     closet();
     chair();
     teapot();
-    
     
     // Rooms walls
     roomsWalls();
@@ -469,7 +475,21 @@ void beanbag() {
     
     glTranslatef(0.0f ,0.75f, 0.0f);
     glutSolidSphere(0.75f,20,20);
+
+
+
+    glPopMatrix();
+
+    glPushMatrix();
+    glScaled(0.15, 0.15 + 0.01*scale_factor, 0.15);
+    glTranslated(0.7, 3, 0.1);
+    glColor3f(1.0f - r_value, 0.0f - g_value, 0.0f - b_value);
     
+    glTranslatef(0.0f ,0.75f, 0.0f);
+    glutSolidSphere(0.75f,20,20);
+
+    
+
     glPopMatrix();
     glPopMatrix();
 }
@@ -504,9 +524,41 @@ void table() {
     glPushMatrix();
     glColor3f(1.0 - r_value, 1.0 - g_value, 0.0 + b_value);
     glTranslated(0.7, 0.3, -0.5);
+    // glRotated(45, 1, 0, 0);
+    glScaled(0.05, 0.05 + scale_factor, 0.05);
+    // drawJack();
+    glutSolidCube(1);
+    glColor3f(0.5, 0.5, 0.5);
+    glPopMatrix();
+
+    glPushMatrix();
+    glColor3f(1.0 - r_value, 0.0 - g_value, 0.0 + b_value);
+    glTranslated(0.7, 0.33, -0.47);
     glRotated(45, 1, 0, 0);
     glScaled(0.05, 0.05 + scale_factor, 0.05);
-    drawJack();
+    // drawJack();
+    glutSolidCube(1);
+    glColor3f(0.5, 0.5, 0.5);
+    glPopMatrix();
+
+
+    glPushMatrix();
+    glColor3f(1.0 - r_value, 0.0 - g_value, 0.0 + b_value);
+    glTranslated(0.7, 0.33, -0.7);
+    // glRotated(45, 1, 0, 0);
+    glScaled(0.01, 0.5 + scale_factor, 0.01);
+    // drawJack();
+    glutSolidCube(1);
+    glColor3f(0.5, 0.5, 0.5);
+    glPopMatrix();
+
+    glPushMatrix();
+    glColor3f(1.0 - r_value, 1.0 - g_value, 0.0 + b_value);
+    glTranslated(0.7, 0.55, -0.7);
+    // glRotated(45, 1, 0, 0);
+    glScaled(0.05, 0.05 + scale_factor, 0.05);
+    // drawJack();
+    glutSolidSphere(0.75f,30,30);
     glColor3f(0.5, 0.5, 0.5);
     glPopMatrix();
 }
@@ -612,6 +664,7 @@ void chair() {
     drawTable(0.2, 0.03, 0.01, 0.1);
     glColor3f(0.5, 0.5, 0.5);
     glPopMatrix();
+    
 }
 
 void teapot() {
@@ -721,11 +774,13 @@ void roomsWalls() {
     drawWall(0.02);
 
     glPushMatrix();
+    glScaled(1.0, 1.0 + scale_factor, 1.0);
     glRotated(90, 0, 0, 1.0);
     drawWall(0.02);
     glPopMatrix();
 
     glPushMatrix();
+    glScaled(1.0, 1.0 + scale_factor, 1.0);
     glColor3f(1, 0.6, 0.5);
     glRotated(-90, 1.0, 0.0, 0.0);
     drawWall(0.02);
@@ -733,11 +788,13 @@ void roomsWalls() {
     glPopMatrix();
 
     glPushMatrix();
+    glScaled(1.0, 1.0 + scale_factor, 1.0);
     glRotated(180, 1, 0, 0.0);
     drawWall(0.02);
     glPopMatrix();
     
     glPushMatrix();
+    glScaled(1.0, 1.0 + scale_factor, 1.0);
     glRotated(90, 0, 0, 1.0);
     glPushMatrix();
     glRotated(180, 1, 0, 0.0);
