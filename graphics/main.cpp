@@ -1,13 +1,9 @@
 /* Libraries */
 
-#include <stdlib.h>
-#include <cstdlib>
-#include <stdio.h>
-#include <time.h>
 #include <math.h>
-#include <string>
-#include <iostream>
-#include <sstream>
+#include <stdio.h>
+#include <stdlib.h>
+
 
 #ifdef __APPLE__
 #include <GLUT/glut.h>
@@ -26,900 +22,660 @@ using namespace std;
 // -----------------------------------
 //              Constant
 // -----------------------------------
-#define WINDOW_WIDTH 1400
-#define WINDOW_HEIGHT 800
-#define ANGEL 10
-#define STEP 30
-#define BULLET_SPEED 10
-#define SCORE_PLUS 10
-#define HEALTH(level) (level * 100)
+
+#define GLUT_KEY_ESCAPE 27
+#define DEG2RAD(a) (a * 0.0174532925)
+#define WINDOW_WIDTH 1700
+#define WINDOW_HEIGHT 1000
+
 
 // -----------------------------------
 //          Methods Signatures
 // -----------------------------------
 
-void gameStates();
-void gameMenu();
-void display();
-void gameOver();
-
+void Display();
 void myTimer(int value);
-void Anim();
 
-void keyboardListener(unsigned char key, int x, int y);
-void keyboardSpecialListener(int key, int x, int y);
-void releaseKey(int key, int x, int y);
+void Keyboard(unsigned char key, int x, int y);
+void Special(int key, int x, int y);
 
-void ship_movement();
-void enemy_movement();
-void ship_shooting();
-void enemy_shooting();
-void enemy_defender_appearance();
-void powerups_movement();
-void checkForPowerUps();
+void drawWall(double thickness);
+void drawTableLeg(double thick, double len);
+void drawJackPart();
+void drawJack();
+void drawTable(double topWid, double topThick, double legThick, double legLen);
+void drawSnowMan();
 
-void init_bezier();
-void new_bezier();
-int* bezier(float t, int* p0,int* p1,int* p2,int* p3);
 
-void backgound();
-void draw_ship();
-void new_enemy();
-void enemy_drawing();
+void sofa();
+void beanbag();
+void tv();
+void table();
 
-string convertInt(int number);
-void rendertext(float x,float y, string strings);
-void drawRect(int x, int y, int w, int h);
-void drawCircle(int x, int y, float r);
+void bed();
+void mirror();
+void closet();
+void chair();
+void teapot();
+
+void setupLights();
+void setupCamera();
+void topCam();
+void defaultCam();
+void rightCam();
+void leftCam();
+void roomsWalls();
 int random(int n, int m);
+
 
 // -----------------------------------
 //              Classes
 // -----------------------------------
 
-class Object{
-    
+class Vector3f {
 public:
-    double x;
-    double y;
-    double width;
-    double height;
-    double full_width;
-    double full_height;
-    
-    Object(double xx, double xy, double xwidth, double xheight) {
-        x = xx;
-        y = xy;
-        width = xwidth;
-        height = xheight;
-    }
-    
-    void translateX(double deltaX){
-        x += (deltaX > 0 & x < WINDOW_WIDTH)? deltaX: (deltaX < 0 & x > 0)? deltaX: 0;
-    }
-    
-    void translateY(double deltaY){
-        y += deltaY;
-    }
-    
-    void draw(){
-        glColor3f(1.0, 0.0, 0.0);
-        drawRect(x, y, width, height);
-    }
-    
-    bool collided(double fX, double fY){
-        if ( (fX >= this->x && fX <= this->x + this->width) && (fY >= this->y && fY <= this->y + this->height) )
-            return true;
-        return false;
-    }
-    
-    double centerX(){
-        return this->x + (this->width)/2;
-    }
-    
-    double centerY(){
-        return this->y + (this->height)/2;
-    }
-    
-};
+    float x, y, z;
 
+    Vector3f(float _x = 0.0f, float _y = 0.0f, float _z = 0.0f) {
+        x = _x;
+        y = _y;
+        z = _z;
+    }
 
-class Bullet : public Object {
-public:
-    Bullet(double xx, double xy, double xwidth, double xheight):Object(xx,xy,xwidth,xheight) {}
-    Bullet(double xx, double xy):Object(xx,xy,1,1) {}
+    Vector3f operator+(Vector3f const &v) {
+        return Vector3f(x + v.x, y + v.y, z + v.z);
+    }
 
-    void draw() {
-        glPushMatrix();
-        glColor3f(1.0, 0.0, 0.0);
-        drawRect(x, y, width, height);
-        glColor3f(1.0, 1.0, 1.0);
-        drawCircle(centerX(), centerY(), 5);
-        
-        glPointSize(3.0);
-        glBegin(GL_POINTS);
-        glColor3f(0.0, 0.0, 0.0);
-        glVertex2f(centerX(), centerY());
-        glEnd();
-       
+    Vector3f operator-(Vector3f const &v) {
+        return Vector3f(x - v.x, y - v.y, z - v.z);
+    }
 
-        glPopMatrix();
+    Vector3f operator*(float n) {
+        return Vector3f(x * n, y * n, z * n);
+    }
+
+    Vector3f operator/(float n) {
+        return Vector3f(x / n, y / n, z / n);
+    }
+
+    Vector3f unit() {
+        return *this / sqrt(x * x + y * y + z * z);
+    }
+
+    Vector3f cross(Vector3f v) {
+        return Vector3f(y * v.z - z * v.y, z * v.x - x * v.z, x * v.y - y * v.x);
     }
 };
 
-class BulletNode{
+class Camera {
 public:
-    Bullet* bullet;
-    BulletNode* next;
-    
-    BulletNode() {
-        this->bullet = NULL;
-        this->next = NULL;
-    }
-    
-    BulletNode(Bullet* bullet) {
-        this->bullet = bullet;
-        this->next = NULL;
-    }
-    
-    void add(Bullet* bullet){
-        if(this->bullet == NULL)
-            this->bullet = bullet;
-        else{
-            BulletNode *node = this;
-            while(node->next != NULL) node = node->next;
-            node->next = new BulletNode(bullet);
-        }
-    }
-    
-};
+    Vector3f eye, center, up;
 
-class BulletObserver{
-    
-public:
-    BulletNode* bulletList;
-    
-    BulletObserver() { this->bulletList = NULL; }
-    
-    void addBullet(Bullet* bullet){
-        if(bullet != NULL){
-            if(this->bulletList == NULL)
-                this->setBullet(bullet);
-            else
-                this->bulletList->add(bullet);
-        }
-    }
-    
-    void setBullet(Bullet* bullet){
-        if(bullet != NULL)
-            this->bulletList = new BulletNode(bullet);
-    }
-    
-    void draw(){
-        BulletNode *node = this->bulletList;
-        while(node != NULL){
-            //            cout<<"Draw bullet";
-            //            cout<<node->bullet->x<<" "<<node->bullet->y<<" "<<node->bullet->width<<node->bullet->height;
-            node->bullet->draw();
-            node = node->next;
-        }
-    }
-    
-    void update(int n){
-        BulletNode *node = this->bulletList;
-        while(node != NULL){
-            node->bullet->translateY(n);
-            node = node->next;
-        }
-    }
-    
-    bool isEmpty(){
-        return (this->bulletList == NULL);
-    }
-    
-};
-
-class Powerups : public Object {
-public:
-    int id;
-    Powerups(double xx, double xy, double xwidth, double xheight, int id):Object(xx,xy,xwidth,xheight) {
-        this->id = id;
+    Camera(float eyeX = 1.0f, float eyeY = 1.0f, float eyeZ = 1.0f, float centerX = 0.0f, float centerY = 0.0f, float centerZ = 0.0f, float upX = 0.0f, float upY = 1.0f, float upZ = 0.0f) {
+        eye = Vector3f(eyeX, eyeY, eyeZ);
+        center = Vector3f(centerX, centerY, centerZ);
+        up = Vector3f(upX, upY, upZ);
     }
 
-    void draw() {
-        if(id == 1) {
-            glPushMatrix();
-            glColor3f(1.0, 1.0, 0.0);
-            drawCircle(x, y, (width + height) / 4);
-            glPopMatrix();
-        } else if(id == 2) {
-            glPushMatrix();
-            glColor3f(0.0, 1.0, 0.0);
-            drawRect(x, y, width, height);
-            glPopMatrix();
-        }
+    void moveX(float d) {
+        Vector3f right = up.cross(center - eye).unit();
+        eye = eye + right * d;
+        center = center + right * d;
     }
 
-};
-
-
-class SpaceShip : public Object {
-public:
-    int score, bullet_timer;
-    bool is_moving_right, is_moving_left, is_firing;
-    
-    SpaceShip(double xx, double xy, double xwidth, double xheight):Object(xx,xy,xwidth,xheight) {
-        score = 0;
-        bullet_timer = 0;
-        is_moving_right = false;
-        is_moving_left = false;
-        is_firing = false;
-    }
-    
-    void draw(){
-        glPointSize(10.0);
-        
-        glBegin(GL_POINTS);//front shooter
-        glColor3f(1,1,1);//111
-        glVertex2f((x + (width / 2)), (y + (height / 2)) +40);
-        glEnd();
-        
-        glBegin(GL_QUADS);
-        glColor3f(0.137255,0.419608,0.556863);//middle body
-        glVertex2f((x + (width / 2)) - 25, (y + (height / 2)) + 25);
-        glVertex2f((x + (width / 2)) - 25, (y + (height / 2)) - 25);
-        glVertex2f((x + (width / 2)) + 25, (y + (height / 2)) - 25);
-        glVertex2f((x + (width / 2)) + 25, (y + (height / 2)) + 25);
-        glEnd();
-        
-        glBegin(GL_POINTS);//design on middle
-        glColor3f(0.90,0.91,0.98);
-        glVertex2f((x + (width / 2)) -10, (y + (height / 2)) -5);
-        glVertex2f((x + (width / 2)) +10, (y + (height / 2)) -5);
-        glEnd();
-        
-        glBegin(GL_POINTS);//thrusters
-        glColor3f(1,1,1);
-        glVertex2f((x + (width / 2)) -10, (y + (height / 2)) -30);
-        glVertex2f((x + (width / 2)) +10, (y + (height / 2)) -30);
-        glEnd();
-        
-        glBegin(GL_TRIANGLES);//right wing
-        glColor3f(0.196078,0.8,0.196078);
-        glVertex2f((x + (width / 2)) +25, (y + (height / 2)) +25);
-        glVertex2f((x + (width / 2)) +25, (y + (height / 2)) -25);
-        glVertex2f((x + (width / 2)) +45, (y + (height / 2)) -35);
-        glEnd();
-        
-        glBegin(GL_TRIANGLES);//left wing
-        glColor3f(0.196078,0.8,0.196078);
-        glVertex2f((x + (width / 2)) -25, (y + (height / 2)) +25);
-        glVertex2f((x + (width / 2)) -25, (y + (height / 2)) -25);
-        glVertex2f((x + (width / 2)) -45, (y + (height / 2)) -35);
-        glEnd();
-        
-        
-        glBegin(GL_QUADS);//up body
-        glColor3f(0.99609, 0.83984, 0);
-        glVertex2f((x + (width / 2)) - 25, (y + (height / 2)) + 25);
-        glVertex2f((x + (width / 2)) - 18, (y + (height / 2)) + 40);
-        glVertex2f((x + (width / 2)) + 18, (y + (height / 2)) + 40);
-        glVertex2f((x + (width / 2)) + 25, (y + (height / 2)) + 25);
-        glEnd();
-
-
-        // Borders
-        /*
-        glLineWidth(10); 
-        glColor3f(1.0, 0.0, 0.0);
-        glBegin(GL_LINES);
-        glVertex3f(x, y, 0.0);
-        glVertex3f(x + width, y, 0);
-        glEnd();
-
-        glLineWidth(10); 
-        glColor3f(1.0, 0.0, 0.0);
-        glBegin(GL_LINES);
-        glVertex3f(x + width, y, 0.0);
-        glVertex3f(x + width, y + height, 0);
-        glEnd();
-
-        glLineWidth(10); 
-        glColor3f(1.0, 0.0, 0.0);
-        glBegin(GL_LINES);
-        glVertex3f(x + width, y + height, 0.0);
-        glVertex3f(x, y + height, 0);
-        glEnd();
-
-        glLineWidth(10); 
-        glColor3f(1.0, 0.0, 0.0);
-        glBegin(GL_LINES);
-        glVertex3f(x, y + height, 0.0);
-        glVertex3f(x, y, 0);
-        glEnd();
-        */
+    void moveY(float d) {
+        eye = eye + up.unit() * d;
+        center = center + up.unit() * d;
     }
 
-    
-    Bullet* shoot(){
-        return new Bullet(this->centerX() - 3, this->centerY() + 30, 5, 25);
+    void moveZ(float d) {
+        Vector3f view = (center - eye).unit();
+        eye = eye + view * d;
+        center = center + view * d;
+    }
+
+    void rotateX(float a) {
+        Vector3f view = (center - eye).unit();
+        Vector3f right = up.cross(view).unit();
+        view = view * cos(DEG2RAD(a)) + up * sin(DEG2RAD(a));
+        up = view.cross(right);
+        center = eye + view;
+    }
+
+    void rotateY(float a) {
+        Vector3f view = (center - eye).unit();
+        Vector3f right = up.cross(view).unit();
+        view = view * cos(DEG2RAD(a)) + right * sin(DEG2RAD(a));
+        right = view.cross(up);
+        center = eye + view;
+    }
+
+    void look() {
+        gluLookAt(
+            eye.x, eye.y, eye.z,
+            center.x, center.y, center.z,
+            up.x, up.y, up.z
+        );
     }
 };
-
-
-class Enemy : public Object {
-public:
-    int health, bullet_timer, type;
-    
-    Enemy(double xx, double xy, double xwidth, double xheight, int health, int type):Object(xx,xy,xwidth,xheight) {
-        this->health = health;
-        bullet_timer = 0;
-        this->type = type;
-    }
-
-    void draw() {
-        if(type == 0) {
-            glPushMatrix();
-            glTranslatef(this->x, this->y, 0);
-            enemy_drawing();
-            glPopMatrix();
-        } else {
-            glPushMatrix();
-            glColor3f(0.3, 0.3, 0.3);
-            drawRect(x, y, width - 10, height - 10);
-            
-            glPointSize(5.0);
-            glBegin(GL_POINTS);
-            glColor3f(1.0, 1.0, 1.0);
-            glVertex2f(centerX() - 40, centerY() - 5);
-            glEnd();
-
-            glBegin(GL_POINTS);
-            glColor3f(1.0, 1.0, 1.0);
-            glVertex2f(centerX() - 30, centerY() - 5);
-            glEnd();
-
-            glBegin(GL_POINTS);
-            glColor3f(1.0, 1.0, 1.0);
-            glVertex2f(centerX() - 20, centerY() - 5);
-            glEnd();
-
-            glBegin(GL_POINTS);
-            glColor3f(1.0, 1.0, 1.0);
-            glVertex2f(centerX() - 10, centerY() - 5);
-            glEnd();
-
-            glBegin(GL_POINTS);
-            glColor3f(1.0, 1.0, 1.0);
-            glVertex2f(centerX(), centerY() - 5);
-            glEnd();
-
-            glBegin(GL_POINTS);
-            glColor3f(1.0, 1.0, 1.0);
-            glVertex2f(centerX() + 10, centerY() - 5);
-            glEnd();
-
-            glBegin(GL_POINTS);
-            glColor3f(1.0, 1.0, 1.0);
-            glVertex2f(centerX() + 20, centerY() - 5);
-            glEnd();
-
-            glColor3f(0.9, 0.5, 0.3);
-            drawCircle(x + width - 10, y + 10, 15);
-            glColor3f(0.9, 0.5, 0.3);
-            drawCircle(x - 10, y + 10, 15);
-            glPopMatrix();
-        }
-    }
-
-    Bullet* shoot(){
-        return new Bullet(this->centerX() - 7, this->centerY() - 30, 5, 25);
-    }
-    
-};
-
-
-class Collider {
-public:
-    BulletObserver* bulletObserver;
-    Enemy* enemy;
-    Enemy* enemy_defender;
-    
-    Collider(BulletObserver* bulletObserver, Enemy* enemy, Enemy* enemy_defender){
-        this->bulletObserver = bulletObserver;
-        this->enemy = enemy;
-        this->enemy_defender = enemy_defender;
-    }
-    
-    int checkForCollisions(){
-        int score = 0;
-        BulletNode* previous = NULL;
-        BulletNode* current = bulletObserver->bulletList;
-        
-        while(current != NULL){
-            if (enemy_defender->collided(current->bullet->x, current->bullet->y)) {
-                current->bullet->x = -10;
-                current->bullet->y = -10;
-            }
-            if(enemy->collided(current->bullet->x, current->bullet->y)){
-                current->bullet->x = -10;
-                current->bullet->y = -10;
-                score += SCORE_PLUS;
-                if( previous == NULL)
-                    bulletObserver->bulletList = current->next;
-                else{
-                    current = current -> next;
-                    previous->next = current;
-                }
-            }
-            previous = current;
-            if(current != NULL)
-                current = current -> next;
-        }
-        
-        return score;
-    }
-};
-
-
-class ColliderShip{
-public:
-    BulletObserver* bulletObserver;
-    SpaceShip* ship;
-    ColliderShip(BulletObserver* bulletObserver, SpaceShip* ship){
-        this->bulletObserver = bulletObserver;
-        this->ship = ship;
-    }
-    
-    int checkForCollisions(){
-        int score = 0;
-        BulletNode* previous = NULL;
-        BulletNode* current = bulletObserver->bulletList;
-        
-        while(current != NULL){
-            if(ship->collided(current->bullet->x, current->bullet->y)){
-                score += SCORE_PLUS;
-                if( previous == NULL)
-                    bulletObserver->bulletList = current->next;
-                else{
-                    current = current -> next;
-                    previous->next = current;
-                }
-            }
-            previous = current;
-            if(current != NULL)
-                current = current -> next;
-        }
-        
-        return score;
-    }
-};
-
 
 // -----------------------------------
 //          Global Variables
 // -----------------------------------
 
-int gamestate = 0, level = 1;
-int background_x=0, background_y=0, background_y2=-WINDOW_HEIGHT;
-int p0[2], p1[2], p2[2], p3[2];
-double t = 0, beizer_timer = 0, new_enemy_timer = 0, enemy_defender_timer = 0;
-bool movement_reverse = false, restart = false, enemy_dead = false, isleveledUp = false;
-bool playGame = false;
+Camera camera;
+bool horror = false;
+double r_value = 0.0, g_value = 0.0, b_value = 0.0, scale_factor = 0.0;
 
-SpaceShip *ship = new SpaceShip(WINDOW_WIDTH / 2, 30, 70, 70);
-BulletObserver *ship_bullets = new BulletObserver();
-
-Enemy *enemy = new Enemy(WINDOW_WIDTH / 2, WINDOW_HEIGHT - 200, 100, 100, HEALTH(level), 0);
-BulletObserver *enemy_bullets = new BulletObserver();
-
-Enemy *enemy_defender = new Enemy(WINDOW_WIDTH, WINDOW_HEIGHT / 2, WINDOW_WIDTH / 10, 30, HEALTH(level), 1);
-
-int powerups_timer = 0;
-Powerups *pu1 = new Powerups(random(50, WINDOW_WIDTH), 0, 30, 30, 1);
-Powerups *pu2 = new Powerups(random(50, WINDOW_WIDTH), 0, 30, 30, 2);
-
-Collider *collider = new Collider(ship_bullets, enemy, enemy_defender);
-ColliderShip *colliderShip = new ColliderShip(enemy_bullets, ship);
-
-
-// -----------------------------------
-//               Main
-// -----------------------------------
 int main(int argc, char** argv) {
-    /* Initializers */
-    srand((unsigned)time(0));
     glutInit(&argc, argv);
+
     glutInitWindowSize(WINDOW_WIDTH, WINDOW_HEIGHT);
-    glutInitDisplayMode(GLUT_DOUBLE | GLUT_RGB | GLUT_DEPTH);
-    glutInitWindowPosition(50, 50);
-    glutCreateWindow("Kayid - Space Invaders");
-    
-    init_bezier();
-    
-    /* Callbacks */
-    glutDisplayFunc(gameStates);
-    glutIdleFunc(Anim);
-    glutKeyboardFunc(keyboardListener);
-    glutSpecialFunc(keyboardSpecialListener);
-    glutIgnoreKeyRepeat(1);
-    glutSpecialUpFunc(releaseKey);
+    glutInitWindowPosition(0, 0);
+
+    glutCreateWindow("Assignment 2");
+    glutDisplayFunc(Display);
+    glutIdleFunc(Display);
+    glutKeyboardFunc(Keyboard);
+    glutSpecialFunc(Special);
     glutTimerFunc(0, myTimer, 0);
-    
-    glClearColor(1, 1, 1, 0);
-    gluOrtho2D(0, WINDOW_WIDTH, 0, WINDOW_HEIGHT);
-    
-    /* Main loop */
+
+
+    glutInitDisplayMode(GLUT_SINGLE | GLUT_RGB | GLUT_DEPTH);
+    glClearColor(1.0f, 1.0f, 1.0f, 0.0f);
+
+    glEnable(GL_DEPTH_TEST);
+    glEnable(GL_LIGHTING);
+    glEnable(GL_LIGHT0);
+    glEnable(GL_NORMALIZE);
+    glEnable(GL_COLOR_MATERIAL);
+
+    glShadeModel(GL_SMOOTH);
+
     glutMainLoop();
-    return 0;
 }
 
+void Display() {
+    setupCamera();
+    setupLights();
 
-// -----------------------------------
-//          Game World Methods
-// -----------------------------------
-
-void gameStates() {
-    glClear(GL_COLOR_BUFFER_BIT|GL_DEPTH_BUFFER_BIT);
+    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     
-    switch(gamestate) {
-        case 0:
-            gameMenu();
-            break;
-        case 1:
-            display();
-            break;
-        case 2:
-            gameOver();
-            break;
-    }
-}
-
-void gameMenu() {
-    glClear(GL_COLOR_BUFFER_BIT|GL_DEPTH_BUFFER_BIT);
-    string txtGameName="Kayid Space Invader";
-    string txtStart="Press (P)lay to Start";
-    
-    string temp=convertInt(ship->score);
-    
-    glColor3f(.56,.75,.23);
-    glRasterPos2f(WINDOW_WIDTH / 2 - 100, WINDOW_HEIGHT / 2 + 250);
-    int i;
-    for(i=0;i<= txtGameName.length();i++) {
-        glutBitmapCharacter(GLUT_BITMAP_TIMES_ROMAN_24,(int)txtGameName[i]);
+    if(horror) {
+        for(int i = 0; i < 10e7; i++);
+        glPushMatrix();
+        glTranslated(random(0, 7) / 10.0, random(0, 5) / 10.0, random(-7, 7) / 10.0);
+        glRotated(random(0, 180), 0, 1, 0);
+        drawSnowMan();
+        glPopMatrix();
         
+//        for(int i = 0; i < 10e7; i++);
+    } else {
+        glPushMatrix();
+        glScaled(0.001, 0.001, 0.001);
+        drawSnowMan();
+        glPopMatrix();
     }
     
-    glRasterPos2f(WINDOW_WIDTH / 2 - 100, WINDOW_HEIGHT / 2 + 150);
-    for(i=0;i<= txtStart.length();i++) {
-        glutBitmapCharacter(GLUT_BITMAP_TIMES_ROMAN_24,(int)txtStart[i]);
-        
-    }
+    // RIGHT Room (Living Room)
+    sofa();
+    beanbag();
+    tv();
+    table();
+
+    // glPushMatrix();
+    // glTranslated(0.7, 0, 0);
+    // glRotated(180, 0, 1, 0);
+    // glColor3f(1, 0, 0);
+    // sofa();
+    // glPopMatrix();
+    
+    // LEFT Room (Bed Room)
+    bed();
+    mirror();
+    closet();
+    chair();
+    teapot();
+    
+    // Rooms walls
+    roomsWalls();
+
+//    printf("EyeX: %f, EyeY: %f, EyeZ: %f | cX: %f, cY: %f, cZ: %f | uX: %f, uY: %f, uZ: %f \n\n", camera.eye.x, camera.eye.y, camera.eye.z, camera.center.x, camera.center.y, camera.center.z, camera.up.x, camera.up.y, camera.up.z );
     
     glFlush();
-    glutSwapBuffers();
-    
 }
-
-void gameOver() {
-    glClear(GL_COLOR_BUFFER_BIT|GL_DEPTH_BUFFER_BIT);
-    string txtGameover="GAME OVER";
-    string txtTotalScore="Total Score : ";
-    string txtRestart="Press r to restart";
-    
-    string temp=convertInt(ship->score);
-    
-    glColor3f(.26,.32,.77);
-    glRasterPos2f(WINDOW_WIDTH / 2 - 100, WINDOW_HEIGHT / 2 + 100);
-    int i;
-    for(i=0;i<=txtGameover.length();i++)
-    {
-        glutBitmapCharacter(GLUT_BITMAP_TIMES_ROMAN_24,(int)txtGameover[i]);
-        
-    }
-    
-    glRasterPos2f(WINDOW_WIDTH / 2 - 100, WINDOW_HEIGHT / 2 + 50);
-    
-    for(i=0;i<=txtTotalScore.length();i++)
-    {
-        glutBitmapCharacter(GLUT_BITMAP_TIMES_ROMAN_24,(int)txtTotalScore[i]);
-    }
-    
-    for(i=0;i<=temp.length();i++)
-    {
-        glutBitmapCharacter(GLUT_BITMAP_TIMES_ROMAN_24,(int)temp[i]);
-    }
-    glRasterPos2f(WINDOW_WIDTH / 2 - 100, WINDOW_HEIGHT / 2);
-    
-    for(i=0;i<=txtRestart.length();i++)
-    {
-        glutBitmapCharacter(GLUT_BITMAP_TIMES_ROMAN_24,(int)txtRestart[i]);
-    }
-    glFlush();
-    glutSwapBuffers();
-    
-}
-
-void display() {
-    start:
-    glClear(GL_COLOR_BUFFER_BIT|GL_DEPTH_BUFFER_BIT);
-
-    backgound();
-
-    // healthbar
-    glPushMatrix();
-    glColor3f(1.0, 0.0, 0.0);
-    double healthbar = ((enemy->health / ((double) HEALTH(level))));
-    healthbar = (healthbar <= 0)? 0 : healthbar;
-    drawRect(WINDOW_WIDTH - 250, WINDOW_HEIGHT - 50, healthbar * (230), 30);
-    glPopMatrix();
-    
-    draw_ship();
-    ship_bullets->draw();
-
-    if(!enemy_dead) {
-        if(t > 0.5) {
-            glPushMatrix(); 
-            glTranslatef((ship->x + (ship->width / 2)), (ship->y + (ship->height / 2)), 1);
-            glRotatef(-ANGEL * t, 0, 0, 1);
-            glTranslatef(-(ship->x + (ship->width / 2)), -(ship->y + (ship->height / 2)), -1);
-            enemy->draw();
-            glPopMatrix();
-        } else {
-            glPushMatrix(); 
-            glTranslatef((ship->x + (ship->width / 2)), (ship->y + (ship->height / 2)), 1);
-            glRotatef(ANGEL * t, 0, 0, 1);
-            glTranslatef(-(ship->x + (ship->width / 2)), -(ship->y + (ship->height / 2)), -1);
-            enemy->draw();
-            glPopMatrix();
-        }
-        
-        enemy_bullets->draw();
-    }
-
-    enemy_defender->draw();
-
-    pu1->draw();
-    pu2->draw();
-    
-    
-    string scoreStr="Score: "+ convertInt(ship->score);
-    rendertext(10, WINDOW_HEIGHT-20, scoreStr);
-    
-    int enemy_health_str = (enemy->health <= 0)? 0 : enemy->health;
-    string healthStr="Health: "+ convertInt(enemy_health_str);
-    rendertext(WINDOW_WIDTH - 170, WINDOW_HEIGHT-40, healthStr);
-
-    if(enemy_dead) {
-        rendertext(WINDOW_WIDTH / 2 - (WINDOW_WIDTH / 10), WINDOW_HEIGHT / 2, "YOU WON!! Level Up: "+ convertInt(level));
-    }
-    
-    
-    
-    glFlush();
-    glutSwapBuffers();
-    glutPostRedisplay();
-}
-
-// -----------------------------------
-//          Timer Function
-// -----------------------------------
 
 void myTimer(int value) {
-    if(playGame) {
-        ship_movement();
-        ship_shooting();
-        
-        enemy_movement();
-        enemy_shooting();
     
-        enemy_defender_appearance();
-
-        background_y = (background_y >= WINDOW_HEIGHT)? 0 : background_y + 10;
-        background_y2 = (background_y2 >= 0)? -WINDOW_HEIGHT : background_y2 + 10;
-
-        powerups_movement();
-
-        new_enemy();
+    if(horror) {
+        r_value = (r_value > 1.0)? 0.0 : r_value + 0.05;
+        g_value = (g_value > 1.0)? 0.0 : g_value + 0.05;
+        b_value = (b_value > 1.0)? 0.0 : b_value + 0.05;
+        scale_factor = (scale_factor > 5.0)? 0.0 : scale_factor + random(-20, 20) / 100.0;
+    } else {
+        r_value = g_value = b_value = scale_factor = 0.0;
     }
+    
     glutTimerFunc(0, myTimer, 0);
     glutPostRedisplay();
 }
-
-
-void Anim() {
-    if(playGame) {
-        int collision_amount = collider->checkForCollisions();
-        ship->score += collision_amount;
-        enemy->health -= collision_amount / 2;
-        
-        if(colliderShip->checkForCollisions() > 0) {
-            gamestate = 2;
-            playGame = false;
-        }
-
-        if(restart && gamestate != 1) {
-            ship = new SpaceShip(WINDOW_WIDTH / 2, 30, 70, 70);
-            enemy = new Enemy(WINDOW_WIDTH / 2, WINDOW_HEIGHT - 200, 100, 100, HEALTH(1), 0);
-            collider = new Collider(ship_bullets, enemy, enemy_defender);
-            colliderShip = new ColliderShip(enemy_bullets, ship);
-            restart = false;
-            gamestate=1;
-            level = 1;
-        }
-
-        checkForPowerUps();
-    }
-}
-
-
 // -----------------------------------
 //          Keyboard Methods
 // -----------------------------------
 
-void keyboardListener(unsigned char key, int x, int y) {
-    switch(key){
-        case 32:
-            ship->is_firing = true;
+void Keyboard(unsigned char key, int x, int y) {
+    float d = 0.1;
+
+    switch (key) {
+    case 'w':
+        camera.moveY(d);
+        break;
+    case 's':
+        camera.moveY(-d);
+        break;
+    case 'a':
+        camera.moveX(d);
+        break;
+    case 'd':
+        camera.moveX(-d);
+        break;
+    case 'q':
+        camera.moveZ(d);
+        break;
+    case 'e':
+        camera.moveZ(-d);
+        break;
+    case 't':
+            topCam();
             break;
-        case 'R':
-        case 'r':
-            restart = true;
-            playGame = true;
+    case 'r':
+            defaultCam();
             break;
-        case 'P':
-        case 'p':
-            playGame = true;
-            gamestate=1;
+    case '1':
+            rightCam();
             break;
-        case 27:
-            exit(0);
+    case '2':
+            leftCam();
+            break;
+    case 'h':
+            horror = true;
+            break;
+    case 'p':
+            horror = false;
+            break;
+
+    case GLUT_KEY_ESCAPE:
+        exit(EXIT_SUCCESS);
     }
-    
+
     glutPostRedisplay();
 }
 
-void keyboardSpecialListener(int key, int x, int y) {
+void Special(int key, int x, int y) {
+    float a = 5.0;
+
     switch (key) {
-        case GLUT_KEY_RIGHT:
-            ship->is_moving_right = true;
-            break;
-        case GLUT_KEY_LEFT:
-            ship->is_moving_left = true;
-            break;
+    case GLUT_KEY_UP:
+        camera.rotateX(a);
+        break;
+    case GLUT_KEY_DOWN:
+        camera.rotateX(-a);
+        break;
+    case GLUT_KEY_LEFT:
+        camera.rotateY(a);
+        break;
+    case GLUT_KEY_RIGHT:
+        camera.rotateY(-a);
+        break;
     }
-    
-    //update display
+
     glutPostRedisplay();
 }
 
-void releaseKey(int key, int x, int y) {
-
-    switch (key) {
-        case GLUT_KEY_RIGHT: 
-            ship->is_moving_right = false;
-            break;
-        case GLUT_KEY_LEFT:
-            ship->is_moving_left = false;
-            break;
-        case 32:
-            ship->is_firing = false;
-            break;
-    }
-}
-
 // -----------------------------------
-//          Movement & Shooting
+//          Drawing Methods
 // -----------------------------------
 
-void ship_movement() {
-    if(ship->is_moving_right) {
-        ship->translateX(STEP);
-    } else if(ship->is_moving_left) {
-        ship->translateX(-STEP);
-    }
+void drawWall(double thickness) {
+    glPushMatrix();
+    glTranslated(0.5, 0.5 * thickness, 0.5);
+    glScaled(1.0, thickness, 1.0);
+    glutSolidCube(1);
+    glPopMatrix();
+}
+void drawTableLeg(double thick, double len) {
+    glPushMatrix();
+    glTranslated(0, len / 2, 0);
+    glScaled(thick, len, thick);
+    glutSolidCube(1.0);
+    glPopMatrix();
+}
+void drawJackPart() {
+    glPushMatrix();
+    glScaled(0.2, 0.2, 1.0);
+    glutSolidSphere(1, 15, 15);
+    glPopMatrix();
+    glPushMatrix();
+    glTranslated(0, 0, 1.2);
+    glutSolidSphere(0.2, 15, 15);
+    glTranslated(0, 0, -2.4);
+    glutSolidSphere(0.2, 15, 15);
+    glPopMatrix();
+}
+void drawJack() {
+    glPushMatrix();
+    drawJackPart();
+    glRotated(90.0, 0, 1, 0);
+    drawJackPart();
+    glRotated(90.0, 1, 0, 0);
+    drawJackPart();
+    glPopMatrix();
+}
+void drawTable(double topWid, double topThick, double legThick, double legLen){
+    glPushMatrix();
+    glTranslated(0, legLen, 0);
+    glScaled(topWid, topThick, topWid);
+    glutSolidCube(1.0);
+    glPopMatrix();
+
+    double dist = 0.95*topWid / 2.0 - legThick / 2.0;
+    glPushMatrix();
+    glTranslated(dist, 0, dist);
+    drawTableLeg(legThick, legLen);
+    glTranslated(0, 0, -2 * dist);
+    drawTableLeg(legThick, legLen);
+    glTranslated(-2 * dist, 0, 2 * dist);
+    drawTableLeg(legThick, legLen);
+    glTranslated(0, 0, -2 * dist);
+    drawTableLeg(legThick, legLen);
+    glPopMatrix();
 }
 
-void enemy_movement() {
-    beizer_timer += 30;
-    if(beizer_timer > 70) {
-        beizer_timer = 0;
-        t += (movement_reverse)? (-0.05) : (0.05);
-    }
-    if(t > 0.99) {
-        movement_reverse = true;
-        new_bezier();
-    } else if(t < 0.01) {
-        movement_reverse = false;
-        new_bezier();
-    }
-    int *res = bezier(t, p0, p1, p2, p3);
+void drawSnowMan() {
+    glPushMatrix();
     
-    int enemy_newX = res[0], enemy_newY = res[1];
-    enemy->x = enemy_newX;
-    enemy->y = enemy_newY;
-}
-
-void ship_shooting() {
-    if(ship->is_firing) {
-        ship->bullet_timer += 10;
-        if (ship->bullet_timer == 30) {
-            ship->bullet_timer = 0;
-            if(ship_bullets->isEmpty()){
-                Bullet *bullet = ship->shoot();
-                ship_bullets->setBullet(bullet);
-            } else {
-                ship_bullets->addBullet(ship->shoot());
-            }
-        }
-
-        #ifdef _WIN32 
-        PlaySound(TEXT("ship_shoot.mp3"), NULL, SND_ASYNC | SND_FILENAME);
-        #endif
-    }
+    glRotated(45, 0, 1, 0);
     
-    ship_bullets->update(BULLET_SPEED);
+    glScaled(0.1, 0.1, 0.1);
+    glTranslated(0.7, 3, 0.7);
+    glColor3f(1.0f, 1.0f, 1.0f);
+    
+    // Draw Body
+    glTranslatef(0.0f ,0.75f, 0.0f);
+    glutSolidSphere(0.75f,20,20);
+    
+    // Draw Head
+    glTranslatef(0.0f, 1.0f, 0.0f);
+    glutSolidSphere(0.25f,20,20);
+    
+    // Draw Eyes
+    glPushMatrix();
+    glColor3f(0.0f,0.0f,0.0f);
+    glTranslatef(0.05f, 0.10f, 0.18f);
+    glutSolidSphere(0.05f,10,10);
+    glTranslatef(-0.1f, 0.0f, 0.0f);
+    glutSolidSphere(0.05f,10,10);
+    glPopMatrix();
+    
+    // Draw Nose
+    glColor3f(1.0f, 0.5f , 0.5f);
+    glutSolidCone(0.08f,0.5f,10,2);
+    
+    glPopMatrix();
 }
 
-void enemy_shooting() {
-    enemy->bullet_timer += 10;
-    if (enemy->bullet_timer == 300) {
-        enemy->bullet_timer = 0;
-        enemy_bullets->addBullet(enemy->shoot());
-        
-        #ifdef _WIN32 
-        PlaySound(TEXT("enemy_shoot.wav"), NULL, SND_ASYNC | SND_FILENAME);
-        #endif
-    }
-    enemy_bullets->update(-BULLET_SPEED);
+
+// ----------------------
+// RIGHT Room (Living Room)
+// ----------------------
+
+void sofa() {
+    glPushMatrix();
+    glColor3f(1.0 - r_value, 0.6 - g_value, 0.9 - b_value);
+    glTranslated(0.1, 0.1, -0.7);
+    glScaled(0.2, 0.2 + scale_factor, 0.3);
+    glutSolidCube(1);
+    glColor3f(0.5, 0.5, 0.5);
+    glPopMatrix();
+    
+    glPushMatrix();
+    glColor3f(0.95 - r_value, 0.62 - g_value, 0.85 - b_value);
+    glTranslated(0.05, 0.25, -0.7);
+    glScaled(0.05, 0.2 + scale_factor, 0.27);
+    glutSolidCube(1);
+    glColor3f(0.5, 0.5, 0.5);
+    glPopMatrix();
+    
+    glPushMatrix();
+    glColor3f(0.9 - r_value, 0.67 - g_value, 0.8 - b_value);
+    glTranslated(0.05, 0.2, -0.835);
+    glScaled(0.3, 0.2 + scale_factor, 0.02);
+    glutSolidCube(1);
+    glColor3f(0.5, 0.5, 0.5);
+    glPopMatrix();
+    
+    glPushMatrix();
+    glColor3f(0.9 - r_value, 0.67 - g_value, 0.8 - b_value);
+    glTranslated(0.05, 0.2, -0.56);
+    glScaled(0.3, 0.2 + scale_factor, 0.02);
+    glutSolidCube(1);
+    glColor3f(0.5, 0.5, 0.5);
+    glPopMatrix();
 }
 
-void enemy_defender_appearance() {
-    enemy_defender_timer += 10;
-    if (enemy_defender_timer == 300) {
-        enemy_defender_timer = 0;
-        enemy_defender->translateX(-4*(STEP + STEP));
-        if(enemy_defender->x < 0) {
-            enemy_defender->x = WINDOW_WIDTH;
-        }
-        enemy_bullets->addBullet(enemy_defender->shoot());
-    }
+void beanbag() {
+    glPushMatrix();
+    
+    glTranslated(0.1, -0.5, -0.3);
+    
+    glPushMatrix();
+    glScaled(0.15, 0.15 + 0.01*scale_factor, 0.15);
+    glTranslated(0.7, 3, 0.7);
+    glColor3f(1.0f - r_value, 1.0f - g_value, 1.0f - b_value);
+    
+    glTranslatef(0.0f ,0.75f, 0.0f);
+    glutSolidSphere(0.75f,20,20);
+
+
+
+    glPopMatrix();
+
+    glPushMatrix();
+    glScaled(0.15, 0.15 + 0.01*scale_factor, 0.15);
+    glTranslated(0.7, 3, 0.1);
+    glColor3f(1.0f - r_value, 0.0f - g_value, 0.0f - b_value);
+    
+    glTranslatef(0.0f ,0.75f, 0.0f);
+    glutSolidSphere(0.75f,20,20);
+
+    
+
+    glPopMatrix();
+    glPopMatrix();
+}
+
+void tv() {
+    glPushMatrix();
+    glColor3f(0.5 - r_value, 0.5 - g_value, 0.5 - b_value);
+    glTranslated(0.57, 0.7, -0.02);
+    glScaled(0.7, 0.5 + scale_factor, 0.01);
+    glutSolidCube(1);
+    glColor3f(0.5, 0.5, 0.5);
+    glPopMatrix();
+    
+    glPushMatrix();
+    glColor3f(0.9 - r_value, 0.9 - g_value, 0.9 - b_value);
+    glTranslated(0.57, 0.7, -0.023);
+    glScaled(0.65, 0.45 + scale_factor, 0.01);
+    glutSolidCube(1);
+    glColor3f(0.5, 0.5, 0.5);
+    glPopMatrix();
+}
+
+void table() {
+    glPushMatrix();
+    glScaled(1.0, 1.0 + scale_factor, 1.0);
+    glColor3f(1.0 - r_value, 0.0 + g_value, 0.0 + b_value);
+    glTranslated(0.7, 0.02, -0.5);
+    drawTable(0.3, 0.03, 0.01, 0.2);
+    glColor3f(0.5, 0.5, 0.5);
+    glPopMatrix();
+    
+    glPushMatrix();
+    glColor3f(1.0 - r_value, 1.0 - g_value, 0.0 + b_value);
+    glTranslated(0.7, 0.3, -0.5);
+    // glRotated(45, 1, 0, 0);
+    glScaled(0.05, 0.05 + scale_factor, 0.05);
+    // drawJack();
+    glutSolidCube(1);
+    glColor3f(0.5, 0.5, 0.5);
+    glPopMatrix();
+
+    glPushMatrix();
+    glColor3f(1.0 - r_value, 0.0 - g_value, 0.0 + b_value);
+    glTranslated(0.7, 0.33, -0.47);
+    glRotated(45, 1, 0, 0);
+    glScaled(0.05, 0.05 + scale_factor, 0.05);
+    // drawJack();
+    glutSolidCube(1);
+    glColor3f(0.5, 0.5, 0.5);
+    glPopMatrix();
+
+
+    glPushMatrix();
+    glColor3f(1.0 - r_value, 0.0 - g_value, 0.0 + b_value);
+    glTranslated(0.7, 0.33, -0.7);
+    // glRotated(45, 1, 0, 0);
+    glScaled(0.01, 0.5 + scale_factor, 0.01);
+    // drawJack();
+    glutSolidCube(1);
+    glColor3f(0.5, 0.5, 0.5);
+    glPopMatrix();
+
+    glPushMatrix();
+    glColor3f(1.0 - r_value, 1.0 - g_value, 0.0 + b_value);
+    glTranslated(0.7, 0.55, -0.7);
+    // glRotated(45, 1, 0, 0);
+    glScaled(0.05, 0.05 + scale_factor, 0.05);
+    // drawJack();
+    glutSolidSphere(0.75f,30,30);
+    glColor3f(0.5, 0.5, 0.5);
+    glPopMatrix();
+}
+
+// ----------------------
+// LEFT Room (Bed Room)
+// ----------------------
+
+void bed() {
+    glPushMatrix();
+    glScaled(1.0, 1.0 + scale_factor, 1.0);
+    glColor3f(1.0 - r_value, 0.4 - g_value, 0.2 - b_value);
+    glTranslated(0.2, 0.0, 0.2);
+    drawTable(0.4, 0.07, 0.05, 0.2);
+    glColor3f(0.5, 0.5, 0.5);
+    glPopMatrix();
+    
+    glPushMatrix();
+    glColor3f(1.0 - r_value, 0.4 - g_value, 0.9 - b_value);
+    glTranslated(0.2, 0.1, 0.2);
+    glScaled(0.3, 0.1 + scale_factor, 0.3);
+    glutSolidCube(1);
+    glColor3f(0.5, 0.5, 0.5);
+    glPopMatrix();
+    
+    glPushMatrix();
+    glColor3f(1.0 - r_value, 0.6 - g_value, 0.4 - b_value);
+    glTranslated(0.01, 0.3, 0.2);
+    glScaled(0.05, 0.15 + scale_factor, 0.4);
+    glutSolidCube(1);
+    glColor3f(0.5, 0.5, 0.5);
+    glPopMatrix();
+}
+
+void mirror() {
+    glPushMatrix();
+    glScaled(1.0, 1.0 + scale_factor, 1.0);
+    glColor3f(1.0 - r_value, 0.4 - g_value, 0.6 - b_value);
+    glTranslated(0.15, 0.0, 0.7);
+    drawTable(0.3, 0.02, 0.03, 0.4);
+    glColor3f(0.5, 0.5, 0.5);
+    glPopMatrix();
+    
+    glPushMatrix();
+    glColor3f(0.6 - r_value, 0.8 - g_value, 0.4 - b_value);
+    glTranslated(0.01, 0.65, 0.7);
+    glScaled(0.05, 0.5 + scale_factor, 0.3);
+    glutSolidCube(1);
+    glColor3f(0.5, 0.5, 0.5);
+    glPopMatrix();
+    
+    glPushMatrix();
+    glColor3f(0.2, 0.6 - g_value, 0.7 - b_value);
+    glTranslated(0.04, 0.67, 0.71);
+    glScaled(0.01, 0.4 + scale_factor, 0.2);
+    glutSolidCube(1);
+    glColor3f(0.5, 0.5, 0.5);
+    glPopMatrix();
+}
+
+void closet() {
+    glPushMatrix();
+    glColor3f(0.5 - r_value, 0.9 - g_value, 0.4 - b_value);
+    glTranslated(0.73, 0.35, 0.1);
+    glScaled(0.45, 0.75 + scale_factor, 0.2);
+    glutSolidCube(1);
+    glColor3f(0.5, 0.5, 0.5);
+    glPopMatrix();
+    
+    glPushMatrix();
+    glColor3f(0.7 - r_value, 0.2 - g_value, 0.4 - b_value);
+    glTranslated(0.85, 0.13, 0.17);
+    glScaled(0.15, 0.1 + scale_factor, 0.1);
+    glutSolidCube(1);
+    glColor3f(0.5, 0.5, 0.5);
+    glPopMatrix();
+    
+    
+    glPushMatrix();
+    glColor3f(0.7 - r_value, 0.2 - g_value, 0.4 - b_value);
+    glTranslated(0.65, 0.13, 0.17);
+    glScaled(0.15, 0.1 + scale_factor, 0.1);
+    glutSolidCube(1);
+    glColor3f(0.5, 0.5, 0.5);
+    glPopMatrix();
+    
+    
+    glPushMatrix();
+    glColor3f(0.9 - r_value, 0.6 - g_value, 0.4 - b_value);
+    glTranslated(0.75, 0.45, 0.17);
+    glScaled(0.35, 0.45 + scale_factor, 0.1);
+    glutSolidCube(1);
+    glColor3f(0.5, 0.5, 0.5);
+    glPopMatrix();
+}
+
+void chair() {
+    glPushMatrix();
+    glScaled(1.0, 1.0 + scale_factor, 1.0);
+    glColor3f(0.9 - r_value, 0.1 - g_value, 0.2 - b_value);
+    glTranslated(0.65, 0.01, 0.5);
+    glRotated(45, 0, 1, 0);
+    drawTable(0.2, 0.03, 0.01, 0.1);
+    glColor3f(0.5, 0.5, 0.5);
+    glPopMatrix();
     
 }
 
-void powerups_movement() {
-    powerups_timer += 10;
-    if (powerups_timer == 5000) {
-        pu1 = new Powerups(random(50, WINDOW_WIDTH - 50), WINDOW_HEIGHT, 30, 30, 1);
-    }
-    if (powerups_timer == 10000) {
-        pu2 = new Powerups(random(50, WINDOW_WIDTH - 50), WINDOW_HEIGHT, 30, 30, 2);
-        powerups_timer = 0;
-    }
-
-    pu1->translateY(-STEP);
-    pu2->translateY(-STEP);
-}
-
-
-void checkForPowerUps() {
-    if(ship->collided(pu1->x, pu1->y)) {
-        pu1->translateY(-1000);
-        enemy->health /= 2;
-
-        #ifdef _WIN32 
-        PlaySound(TEXT("powerup.wav"), NULL, SND_ASYNC | SND_FILENAME);
-        #endif
-
-    } else if(ship->collided(pu2->x, pu2->y)) {
-        pu2->translateY(-1000);
-        ship->score += 100;
-
-        #ifdef _WIN32 
-        PlaySound(TEXT("powerup2.mp3"), NULL, SND_ASYNC | SND_FILENAME);
-        #endif
-
-    }
+void teapot() {
+    glPushMatrix();
+    glColor3f(1.0 - r_value, 1.0 - g_value, 0.0 - b_value);
+    glTranslated(0.24, 0.45, 0.6);
+    glScaled(0.5, 0.5 + scale_factor, 0.5);
+    glRotated(30, 0, 1, 0);
+    glutSolidTeapot(0.08);
+    glColor3f(0.5, 0.5, 0.5);
+    glPopMatrix();
 }
 
 // -----------------------------------
@@ -927,216 +683,126 @@ void checkForPowerUps() {
 // -----------------------------------
 
 
-void backgound() {
-    glPushMatrix(); 
-    glColor3f(0.0, 0.0, 0.0);
-    drawRect(background_x, background_y, WINDOW_WIDTH, WINDOW_HEIGHT);
+void setupLights() {
+    GLfloat ambient[] = { 0.7f, 0.7f, 0.7, 1.0f };
+    GLfloat diffuse[] = { 0.6f, 0.6f, 0.6, 1.0f };
+    GLfloat specular[] = { 1.0f, 1.0f, 1.0, 1.0f };
+    GLfloat shininess[] = { 50 };
+    glMaterialfv(GL_FRONT_AND_BACK, GL_AMBIENT, ambient);
+    glMaterialfv(GL_FRONT, GL_DIFFUSE, diffuse);
+    glMaterialfv(GL_FRONT, GL_SPECULAR, specular);
+    glMaterialfv(GL_FRONT, GL_SHININESS, shininess);
 
-    for(int i = 0; i < 10; ++i) {
-        glColor3f(1.0, 1.0, 1.0);
-        drawCircle(random(0, WINDOW_WIDTH), random(0, WINDOW_HEIGHT), 1.5);
-    }
-
-    glPopMatrix();
-
-
-    glPushMatrix(); 
-    glColor3f(0.03, 0.03, 0.03);
-    drawRect(background_x, background_y2, WINDOW_WIDTH, WINDOW_HEIGHT);
-
-    for(int i = 0; i < 10; ++i) {
-        glColor3f(1.0, 0.5, 1.0);
-        drawCircle(random(0, WINDOW_WIDTH), random(0, WINDOW_HEIGHT), 1.5);
-    }
-
-    glPopMatrix();
+    GLfloat lightIntensity[] = { 0.7f, 0.7f, 1, 1.0f };
+    GLfloat lightPosition[] = { -7.0f, 6.0f, 3.0f, 0.0f };
+    glLightfv(GL_LIGHT0, GL_POSITION, lightIntensity);
+    glLightfv(GL_LIGHT0, GL_DIFFUSE, lightIntensity);
+    
+//    GLfloat lightIntensity2[] = { -0.7f, -0.7f, -1, -1.0f };
+//    glLightfv(GL_LIGHT1, GL_POSITION, lightIntensity2);
+//    glLightfv(GL_LIGHT1, GL_DIFFUSE, lightIntensity2);
 }
 
-void draw_ship() {
-    if(ship->is_moving_right) {
-        glPushMatrix(); 
-        glTranslatef((ship->x + (ship->width / 2)), (ship->y + (ship->height / 2)), 1);
-        glRotatef(-ANGEL, 0, 0, 1);
-        glTranslatef(-(ship->x + (ship->width / 2)), -(ship->y + (ship->height / 2)), -1);
-        ship->draw();
-        glPopMatrix();
-    } else if(ship->is_moving_left) {
-        glPushMatrix();
-        glTranslatef((ship->x + (ship->width / 2)), (ship->y + (ship->height / 2)), 1); 
-        glRotatef(ANGEL, 0, 0, 1);
-        glTranslatef(-(ship->x + (ship->width / 2)), -(ship->y + (ship->height / 2)), -1);
-        ship->draw();
-        glPopMatrix();
-    } else {
-        ship->draw();
-    }
+void setupCamera() {
+    glMatrixMode(GL_PROJECTION);
+    glLoadIdentity();
+    gluPerspective(60, WINDOW_WIDTH / WINDOW_HEIGHT, 0.001, 100);
+
+    glMatrixMode(GL_MODELVIEW);
+    glLoadIdentity();
+    
+    camera.look();
 }
 
-void new_enemy() {
-    if (enemy-> health <= 0) {
-        enemy_dead = true;
-        new_enemy_timer += 10;
-        if(new_enemy_timer == 300) {
-            enemy = new Enemy(WINDOW_WIDTH / 2, WINDOW_HEIGHT - 200, 100, 100, HEALTH(level), 0);
-            collider = new Collider(ship_bullets, enemy, enemy_defender);
-            enemy_dead = false;
-            isleveledUp = false;
-            new_enemy_timer = 0;
-        }
-    }
-
-    if(enemy_dead && !isleveledUp) {
-        level++;
-        isleveledUp = true;
-
-        #ifdef _WIN32 
-        PlaySound(TEXT("levelup.mp3"), NULL, SND_ASYNC | SND_FILENAME);
-        #endif
-    }
+void topCam() {
+    camera.eye.x = 0.572740;
+    camera.eye.y = 2.717326;
+    camera.eye.z = 0.0;
+    
+    camera.center.x = 0.501404;
+    camera.center.y = 1.719873;
+    camera.center.z = 0.0;
+    
+    camera.up.x = -0.997452;
+    camera.up.y = 0.071336;
+    camera.up.z = 0.0;
 }
 
-void enemy_drawing() {
+void defaultCam() {
+    camera.eye.x = 2.502736;
+    camera.eye.y = 0.645169;
+    camera.eye.z = 0.032397;
+    
+    camera.center.x = 1.526539;
+    camera.center.y = 0.432568;
+    camera.center.z = -0.010505;
+    
+    camera.up.x = -0.212396;
+    camera.up.y =  0.977139;
+    camera.up.z = -0.009335;
+}
 
-    // foot
+void rightCam() {
+    camera.eye.x = 1.556322;
+    camera.eye.y = 1.091500;
+    camera.eye.z = -1.379230;
+    
+    camera.center.x = 0.801593;
+    camera.center.y = 0.693242;
+    camera.center.z = -0.857910;
+    
+    camera.up.x = -0.318105;
+    camera.up.y =  0.917144;
+    camera.up.z = 0.240116;
+}
+
+void leftCam() {
+    camera.eye.x = 1.346410;
+    camera.eye.y = 1.346410;
+    camera.eye.z = 1.346410;
+    
+    camera.center.x = 0.346410;
+    camera.center.y = 0.346410;
+    camera.center.z = 0.346410;
+    
+    camera.up.x = 0;
+    camera.up.y =  1;
+    camera.up.z = 0;
+}
+
+void roomsWalls() {
+    drawWall(0.02);
+
     glPushMatrix();
-    glColor3f(1.0f, 1.0f, 0.0f); 
-    drawRect(0, 0, 100, 10);
-    drawCircle(0, 5, 5);
-    drawCircle(100, 5, 5);
-
-    glColor3f(0.0f, 1.0f, 1.0f); 
-    drawCircle(10, 5, 5);
-    drawCircle(30, 5, 5);
-    drawCircle(50, 5, 5);
-    drawCircle(70, 5, 5);
-    drawCircle(90, 5, 5);
-
-    glPopMatrix();
-
-    // Body
-    glPushMatrix();
-    glColor3f(1.0f, 0.0f, 0.0f); 
-    drawRect(10, 10, 80, 70);
-
-    glColor3f(0.0f, 1.0f, 0.0f); 
-    drawCircle(22, 20, 7);
-    drawCircle(78, 20, 7);
-
-    glColor3f(0.0f, 0.0f, 0.0f);
-    drawCircle(23, 20, 3);
-    drawCircle(77, 20, 3);
-
-    glColor3f(0.0f, 0.7f, 0.5f);
-    drawRect(40, 15, 25, 10);
-
-    glColor3f(1.0f, 1.0f, 1.0f);
-    drawCircle(37, 35, 5);
-    drawCircle(52, 35, 5);
-    drawCircle(67, 35, 5);
-    glPopMatrix();
-
-    // Head
-    glPushMatrix();
-    glColor3f(1.0f, 1.0f, 1.0f); 
-    drawRect(20, 80, 60, 35);
-
-    glColor3f(0.0f, 0.0f, 0.0f);
-    drawCircle(30, 100, 7);
-    drawCircle(70, 100, 7);
-
+    glScaled(1.0, 1.0 + scale_factor, 1.0);
+    glRotated(90, 0, 0, 1.0);
+    drawWall(0.02);
     glPopMatrix();
 
     glPushMatrix();
-    glColor3f(1.0f, 0.0f, 0.0f);
-    drawRect(85, 60, 35, 10);
-    drawRect(115, 60, 10, 35);
+    glScaled(1.0, 1.0 + scale_factor, 1.0);
+    glColor3f(1, 0.6, 0.5);
+    glRotated(-90, 1.0, 0.0, 0.0);
+    drawWall(0.02);
+    glColor3f(0.5, 0.5, 0.5);
     glPopMatrix();
 
     glPushMatrix();
-    glColor3f(1.0f, 0.0f, 0.0f);
-    drawRect(10, 60, -35, 10);
-    drawRect(-25, 60, 10, 35);
+    glScaled(1.0, 1.0 + scale_factor, 1.0);
+    glRotated(180, 1, 0, 0.0);
+    drawWall(0.02);
     glPopMatrix();
-
+    
     glPushMatrix();
-    glColor3f(0.0f, 0.0f, 1.0f);
-    glBegin(GL_TRIANGLES);
-        glVertex3f(25.0f, 80.0f, 0.0f);
-        glVertex3f(80.0f, 80.0f, 0.0f);
-        glVertex3f(50.0f, 90.0f, 0.0f);
-    glEnd();
-    glPopMatrix();
-}
-
-int* bezier(float t, int* p0,int* p1,int* p2,int* p3) {
-    int res[2];
-    res[0]=pow((1-t),3)*p0[0]+3*t*pow((1-t),2)*p1[0]+3*pow(t,2)*(1-t)*p2[0]+pow(t,3)*p3[0];
-    res[1]=pow((1-t),3)*p0[1]+3*t*pow((1-t),2)*p1[1]+3*pow(t,2)*(1-t)*p2[1]+pow(t,3)*p3[1];
-    return res;
-}
-
-void init_bezier() {
-    p0[0]=WINDOW_WIDTH / 10.0;
-    p0[1]=WINDOW_WIDTH / 4.0 + 100;
-    
-    p1[0]=WINDOW_WIDTH / 10.0;
-    p1[1]=WINDOW_WIDTH / 4.0 + 400;
-    
-    p2[0]=WINDOW_WIDTH / 10.0 + 800;
-    p2[1]=WINDOW_WIDTH / 4.0 + 400;
-    
-    p3[0]=WINDOW_WIDTH / 10.0 + 800;
-    p3[1]=WINDOW_WIDTH / 4.0 + 100;
-}
-
-void new_bezier() {
-    p1[0]=random(50, WINDOW_WIDTH - 50);
-    p3[0]=random(50, WINDOW_WIDTH - 50);
-    p1[1]=random(WINDOW_HEIGHT / 2, WINDOW_HEIGHT - enemy->height);
-    p2[1]=random(WINDOW_HEIGHT / 2, WINDOW_HEIGHT - enemy->height);
-}
-
-void drawRect(int x, int y, int w, int h) {
-    glBegin(GL_POLYGON);
-    glVertex2f(x, y);
-    glVertex2f(x + w, y);
-    glVertex2f(x + w, y + h);
-    glVertex2f(x, y + h);
-    glEnd();
-}
-
-void drawCircle(int x, int y, float r) {
+    glScaled(1.0, 1.0 + scale_factor, 1.0);
+    glRotated(90, 0, 0, 1.0);
     glPushMatrix();
-    glTranslatef(x, y, 0);
-    GLUquadric *quadObj = gluNewQuadric();
-    gluDisk(quadObj, 0, r, 50, 50);
+    glRotated(180, 1, 0, 0.0);
+    drawWall(0.02);
+    glPopMatrix();
     glPopMatrix();
 }
 
-string convertInt(int number) {
-    stringstream ss;
-    
-    ss << number;
-    return ss.str();
-}
-
-void rendertext(float x,float y, string strings) {
-    
-    // glColor3f(.26,.32,.77);
-
-    glColor3f(1, 1, 1);
-    
-    glRasterPos2d(x,y);
-    glDisable(GL_TEXTURE);
-    glDisable(GL_TEXTURE_2D);
-    for(int i=0;i<=strings.length();i++)
-    {
-        glutBitmapCharacter(GLUT_BITMAP_9_BY_15,(int)strings[i]);
-    }
-    glEnable(GL_TEXTURE);
-    glEnable(GL_TEXTURE_2D);
-    
-}
 
 int random(int n, int m) {
     return rand() % (m - n + 1) + n;
